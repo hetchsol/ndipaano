@@ -489,7 +489,7 @@ async function main() {
       practitionerId: doctor1.id,
       amount: 350.00,
       currency: 'ZMW',
-      paymentMethod: PaymentMethod.CARD,
+      paymentMethod: PaymentMethod.VISA,
       paymentProvider: 'paystack',
       providerReference: 'PSK_REF_002',
       status: PaymentStatus.COMPLETED,

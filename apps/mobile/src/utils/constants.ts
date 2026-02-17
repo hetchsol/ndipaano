@@ -2,15 +2,15 @@ import { Platform } from 'react-native';
 
 // API Configuration
 export const API_URL = Platform.select({
-  android: 'http://10.0.2.2:4000/api',
-  ios: 'http://localhost:4000/api',
-  default: 'http://localhost:4000/api',
+  android: 'http://10.0.2.2:3001/api',
+  ios: 'http://localhost:3001/api',
+  default: 'http://localhost:3001/api',
 });
 
 export const SOCKET_URL = Platform.select({
-  android: 'http://10.0.2.2:4000',
-  ios: 'http://localhost:4000',
-  default: 'http://localhost:4000',
+  android: 'http://10.0.2.2:3001',
+  ios: 'http://localhost:3001',
+  default: 'http://localhost:3001',
 });
 
 // Secure Store Keys
