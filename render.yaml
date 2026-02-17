@@ -6,7 +6,6 @@ services:
   - type: web
     name: ndipaano-api
     runtime: node
-    region: frankfurt
     plan: free
     buildCommand: "NODE_ENV=development pnpm install && cd packages/shared && (pnpm build || true) && cd ../../apps/api && npx prisma generate && pnpm build"
     startCommand: cd apps/api && npx prisma migrate deploy && node dist/main
@@ -52,7 +51,6 @@ services:
   - type: web
     name: ndipaano-web
     runtime: node
-    region: frankfurt
     plan: free
     buildCommand: "NODE_ENV=development pnpm install && cd packages/shared && (pnpm build || true) && cd ../../apps/web && pnpm build"
     startCommand: cd apps/web && pnpm start
