@@ -8,7 +8,7 @@ services:
     runtime: node
     region: frankfurt
     plan: free
-    buildCommand: pnpm install && cd packages/shared && pnpm build || true && cd ../../apps/api && npx prisma generate && pnpm build
+    buildCommand: "NODE_ENV=development pnpm install && cd packages/shared && (pnpm build || true) && cd ../../apps/api && npx prisma generate && pnpm build"
     startCommand: cd apps/api && npx prisma migrate deploy && node dist/main
     envVars:
       - key: NODE_ENV
@@ -54,7 +54,7 @@ services:
     runtime: node
     region: frankfurt
     plan: free
-    buildCommand: pnpm install && cd packages/shared && pnpm build || true && cd ../../apps/web && pnpm build
+    buildCommand: "NODE_ENV=development pnpm install && cd packages/shared && (pnpm build || true) && cd ../../apps/web && pnpm build"
     startCommand: cd apps/web && pnpm start
     envVars:
       - key: NODE_ENV
