@@ -27,15 +27,14 @@ import {
   CancelBookingDto,
 } from './dto/booking.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
-import { Roles, UserRole } from '../../common/decorators/roles.decorator';
+import { Roles, UserRole, PRACTITIONER_ROLES } from '../../common/decorators/roles.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 
 /**
  * Prisma practitioner roles used for internal role-based branching.
- * The @Roles() decorator uses the local UserRole enum from the decorators module.
  */
-const PRACTITIONER_ROLES: PrismaUserRole[] = [
+const PRISMA_PRACTITIONER_ROLES: PrismaUserRole[] = [
   PrismaUserRole.NURSE,
   PrismaUserRole.CLINICAL_OFFICER,
   PrismaUserRole.DOCTOR,
@@ -89,7 +88,7 @@ export class BookingsController {
     @CurrentUser() user: { id: string; role: PrismaUserRole },
     @Query() query: BookingQueryDto,
   ) {
-    if (PRACTITIONER_ROLES.includes(user.role)) {
+    if (PRISMA_PRACTITIONER_ROLES.includes(user.role)) {
       return this.bookingsService.findByPractitioner(user.id, query);
     }
 
@@ -117,7 +116,7 @@ export class BookingsController {
   // ===========================================================================
 
   @Get('stats')
-  @Roles(UserRole.PRACTITIONER)
+  @Roles(...PRACTITIONER_ROLES)
   @ApiOperation({
     summary: 'Get practitioner booking statistics',
     description:
@@ -150,7 +149,7 @@ export class BookingsController {
   // ===========================================================================
 
   @Patch(':id/accept')
-  @Roles(UserRole.PRACTITIONER)
+  @Roles(...PRACTITIONER_ROLES)
   @ApiOperation({
     summary: 'Accept a booking',
     description:
@@ -173,7 +172,7 @@ export class BookingsController {
   // ===========================================================================
 
   @Patch(':id/reject')
-  @Roles(UserRole.PRACTITIONER)
+  @Roles(...PRACTITIONER_ROLES)
   @ApiOperation({
     summary: 'Reject a booking',
     description:
@@ -198,7 +197,7 @@ export class BookingsController {
   // ===========================================================================
 
   @Patch(':id/en-route')
-  @Roles(UserRole.PRACTITIONER)
+  @Roles(...PRACTITIONER_ROLES)
   @ApiOperation({
     summary: 'Mark practitioner en route',
     description:
@@ -222,7 +221,7 @@ export class BookingsController {
   // ===========================================================================
 
   @Patch(':id/start')
-  @Roles(UserRole.PRACTITIONER)
+  @Roles(...PRACTITIONER_ROLES)
   @ApiOperation({
     summary: 'Start a visit',
     description:
@@ -246,7 +245,7 @@ export class BookingsController {
   // ===========================================================================
 
   @Patch(':id/complete')
-  @Roles(UserRole.PRACTITIONER)
+  @Roles(...PRACTITIONER_ROLES)
   @ApiOperation({
     summary: 'Complete a visit',
     description:

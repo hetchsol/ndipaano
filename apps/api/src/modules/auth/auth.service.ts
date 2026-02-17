@@ -17,7 +17,7 @@ import { RegisterPatientDto, RegisterPractitionerDto } from './dto/register.dto'
 /**
  * Token pair returned after successful authentication.
  */
-interface TokenPair {
+export interface TokenPair {
   accessToken: string;
   refreshToken: string;
 }
@@ -393,7 +393,7 @@ export class AuthService {
           'JWT_REFRESH_SECRET',
           this.configService.get<string>(
             'JWT_SECRET',
-            'ndiipano-jwt-secret-change-in-production',
+            'ndipaano-jwt-secret-change-in-production',
           ) + '-refresh',
         ),
       });
@@ -441,7 +441,7 @@ export class AuthService {
 
     const jwtSecret = this.configService.get<string>(
       'JWT_SECRET',
-      'ndiipano-jwt-secret-change-in-production',
+      'ndipaano-jwt-secret-change-in-production',
     );
     const jwtRefreshSecret = this.configService.get<string>(
       'JWT_REFRESH_SECRET',
@@ -492,7 +492,7 @@ export class AuthService {
 
     // Generate TOTP secret
     const totp = new OTPAuth.TOTP({
-      issuer: 'Ndiipano',
+      issuer: 'Ndipaano',
       label: user.email,
       algorithm: 'SHA1',
       digits: 6,
@@ -853,7 +853,7 @@ export class AuthService {
    */
   private validateTOTPToken(secret: string, token: string): boolean {
     const totp = new OTPAuth.TOTP({
-      issuer: 'Ndiipano',
+      issuer: 'Ndipaano',
       label: 'user',
       algorithm: 'SHA1',
       digits: 6,

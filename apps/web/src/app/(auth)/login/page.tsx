@@ -19,6 +19,18 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
+function getDashboardUrl(role?: string): string {
+  switch (role) {
+    case 'admin':
+      return '/admin';
+    case 'practitioner':
+      return '/practitioner/dashboard';
+    case 'patient':
+    default:
+      return '/patient/dashboard';
+  }
+}
+
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
@@ -41,7 +53,8 @@ export default function LoginPage() {
     try {
       await login(data.email, data.password);
       toast.success('Welcome back!');
-      router.push('/dashboard');
+      const role = useAuth.getState().user?.role;
+      router.push(getDashboardUrl(role));
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string; requires2FA?: boolean } } };
       if (err.response?.data?.requires2FA) {
@@ -64,7 +77,8 @@ export default function LoginPage() {
     try {
       await login(credentials.email, credentials.password, twoFactorCode);
       toast.success('Welcome back!');
-      router.push('/dashboard');
+      const role = useAuth.getState().user?.role;
+      router.push(getDashboardUrl(role));
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       toast.error(err.response?.data?.message || 'Invalid verification code. Please try again.');
@@ -119,7 +133,7 @@ export default function LoginPage() {
     <div>
       <h2 className="text-2xl font-bold text-gray-900">Sign In</h2>
       <p className="mt-2 text-sm text-gray-500">
-        Access your Ndiipano healthcare account.
+        Access your Ndipaano healthcare account.
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">

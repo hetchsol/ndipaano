@@ -1,8 +1,8 @@
 {
-  "name": "ndiipano",
+  "name": "ndipaano",
   "version": "0.1.0",
   "private": true,
-  "description": "Ndiipano - Medical Home Care Platform for Zambia",
+  "description": "Ndipaano - Medical Home Care Platform for Zambia",
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",

@@ -14,11 +14,11 @@ import {
 } from 'lucide-react';
 
 const practitionerNavItems: SidebarItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Schedule', href: '/schedule', icon: CalendarDays },
-  { label: 'Earnings', href: '/earnings', icon: DollarSign },
-  { label: 'Profile', href: '/profile', icon: UserCircle },
-  { label: 'Documents', href: '/profile#documents', icon: FileCheck },
+  { label: 'Dashboard', href: '/practitioner/dashboard', icon: LayoutDashboard },
+  { label: 'Schedule', href: '/practitioner/schedule', icon: CalendarDays },
+  { label: 'Earnings', href: '/practitioner/earnings', icon: DollarSign },
+  { label: 'Profile', href: '/practitioner/profile', icon: UserCircle },
+  { label: 'Documents', href: '/practitioner/profile#documents', icon: FileCheck },
 ];
 
 export default function PractitionerLayout({

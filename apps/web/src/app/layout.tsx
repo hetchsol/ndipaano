@@ -11,8 +11,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'Ndiipano - Medical Home Care',
-    template: '%s | Ndiipano',
+    default: 'Ndipaano - Medical Home Care',
+    template: '%s | Ndipaano',
   },
   description:
     'Connecting Zambian patients with verified healthcare practitioners for quality home-based medical care. Book home visits, virtual consultations, and manage your health records securely.',
@@ -22,12 +22,12 @@ export const metadata: Metadata = {
     'home visits',
     'virtual consultations',
     'practitioners',
-    'Ndiipano',
+    'Ndipaano',
     'telemedicine',
   ],
-  authors: [{ name: 'Ndiipano Health' }],
+  authors: [{ name: 'Ndipaano Health' }],
   openGraph: {
-    title: 'Ndiipano - Medical Home Care',
+    title: 'Ndipaano - Medical Home Care',
     description:
       'Connecting Zambian patients with verified healthcare practitioners for quality home-based medical care.',
     type: 'website',

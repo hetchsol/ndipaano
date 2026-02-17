@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { bookingsAPI } from '../../../lib/api';
-import { formatDate, formatCurrency, getStatusColor } from '../../../lib/utils';
-import { Card, CardContent } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
-import { Badge } from '../../../components/ui/badge';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../components/ui/tabs';
+import { bookingsAPI } from '../../../../lib/api';
+import { formatDate, formatCurrency, getStatusColor } from '../../../../lib/utils';
+import { Card, CardContent } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
+import { Badge } from '../../../../components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../../../components/ui/tabs';
 import { toast } from 'sonner';
 import {
   CalendarDays,

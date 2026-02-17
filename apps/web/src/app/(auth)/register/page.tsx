@@ -114,8 +114,8 @@ export default function RegisterPage() {
         phone: data.phone,
         role: 'patient',
       });
-      toast.success('Account created successfully! Welcome to Ndiipano.');
-      router.push('/dashboard');
+      toast.success('Account created successfully! Welcome to Ndipaano.');
+      router.push('/patient/dashboard');
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       toast.error(err.response?.data?.message || 'Registration failed. Please try again.');
@@ -138,7 +138,7 @@ export default function RegisterPage() {
         licenseNumber: data.licenseNumber,
       });
       toast.success('Account created! Your credentials will be verified within 48 hours.');
-      router.push('/dashboard');
+      router.push('/practitioner/dashboard');
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
       toast.error(err.response?.data?.message || 'Registration failed. Please try again.');
@@ -406,7 +406,7 @@ export default function RegisterPage() {
                 />
                 <span className="text-xs text-gray-600">
                   I consent to the verification of my professional credentials with HPCZ and authorize
-                  Ndiipano to perform background checks as required.
+                  Ndipaano to perform background checks as required.
                 </span>
               </label>
               {practitionerForm.formState.errors.consentVerification && (

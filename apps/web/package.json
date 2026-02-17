@@ -1,5 +1,5 @@
 {
-  "name": "@ndiipano/web",
+  "name": "@ndipaano/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -12,7 +12,7 @@
     "next": "^14.2.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "@ndiipano/shared": "workspace:*",
+    "@ndipaano/shared": "workspace:*",
     "axios": "^1.7.2",
     "zustand": "^4.5.4",
     "react-hook-form": "^7.52.1",

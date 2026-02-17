@@ -3,13 +3,14 @@ import type { NextRequest } from 'next/server';
 
 // Routes that require authentication (any role)
 const protectedRoutes = [
-  '/dashboard',
-  '/bookings',
-  '/records',
-  '/prescriptions',
-  '/schedule',
-  '/earnings',
-  '/profile',
+  '/patient/dashboard',
+  '/patient/bookings',
+  '/patient/records',
+  '/patient/prescriptions',
+  '/practitioner/dashboard',
+  '/practitioner/schedule',
+  '/practitioner/earnings',
+  '/practitioner/profile',
 ];
 
 // Admin routes - require admin role
@@ -32,8 +33,8 @@ export function middleware(request: NextRequest) {
 
   // Get auth token and role from cookies
   // The auth store sets these cookies on login for middleware access
-  const token = request.cookies.get('ndiipano_token')?.value;
-  const userRole = request.cookies.get('ndiipano_role')?.value;
+  const token = request.cookies.get('ndipaano_token')?.value;
+  const userRole = request.cookies.get('ndipaano_role')?.value;
 
   // Skip middleware for static files, Next.js internals, and API routes
   if (
@@ -79,15 +80,15 @@ export function middleware(request: NextRequest) {
     }
 
     // Practitioner-only routes - patients cannot access
-    const practitionerOnlyRoutes = ['/schedule', '/earnings'];
+    const practitionerOnlyRoutes = ['/practitioner/schedule', '/practitioner/earnings', '/practitioner/dashboard', '/practitioner/profile'];
     if (matchesRoute(pathname, practitionerOnlyRoutes) && userRole === 'patient') {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      return NextResponse.redirect(new URL('/patient/dashboard', request.url));
     }
 
     // Patient-only routes - practitioners should not access
-    const patientOnlyRoutes = ['/records', '/prescriptions'];
+    const patientOnlyRoutes = ['/patient/records', '/patient/prescriptions', '/patient/dashboard', '/patient/bookings'];
     if (matchesRoute(pathname, patientOnlyRoutes) && userRole === 'practitioner') {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
+      return NextResponse.redirect(new URL('/practitioner/dashboard', request.url));
     }
   }
 
@@ -96,18 +97,17 @@ export function middleware(request: NextRequest) {
 
 /**
  * Returns the appropriate dashboard URL for a given user role.
- * Both patients and practitioners use /dashboard (rendered differently by their respective layouts).
- * Admins go to /admin.
+ * Patients go to /patient/dashboard, practitioners to /practitioner/dashboard, admins to /admin.
  */
 function getDashboardUrl(role?: string): string {
   switch (role) {
     case 'admin':
       return '/admin';
     case 'practitioner':
-      return '/dashboard';
+      return '/practitioner/dashboard';
     case 'patient':
     default:
-      return '/dashboard';
+      return '/patient/dashboard';
   }
 }
 

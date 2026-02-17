@@ -25,8 +25,8 @@ export class SearchService {
       specialization,
       gender,
       sortBy,
-      page,
-      limit,
+      page = 1,
+      limit = 20,
     } = query;
 
     const offset = (page - 1) * limit;
@@ -222,7 +222,7 @@ export class SearchService {
    * Search pharmacies by location and name.
    */
   async searchPharmacies(query: SearchPharmaciesDto) {
-    const { latitude, longitude, radiusKm, name, page, limit } = query;
+    const { latitude, longitude, radiusKm, name, page = 1, limit = 20 } = query;
     const offset = (page - 1) * limit;
     const hasLocationSearch = latitude !== undefined && longitude !== undefined;
 

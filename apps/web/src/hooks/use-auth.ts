@@ -54,16 +54,16 @@ export const useAuth = create<AuthState>((set, get) => ({
 
   initialize: () => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('ndiipano_token');
-      const userStr = localStorage.getItem('ndiipano_user');
+      const token = localStorage.getItem('ndipaano_token');
+      const userStr = localStorage.getItem('ndipaano_user');
       if (token && userStr) {
         try {
           const user = JSON.parse(userStr);
           set({ user, token, isAuthenticated: true, isLoading: false });
         } catch {
-          localStorage.removeItem('ndiipano_token');
-          localStorage.removeItem('ndiipano_user');
-          localStorage.removeItem('ndiipano_refresh_token');
+          localStorage.removeItem('ndipaano_token');
+          localStorage.removeItem('ndipaano_user');
+          localStorage.removeItem('ndipaano_refresh_token');
           set({ isLoading: false });
         }
       } else {
@@ -76,9 +76,9 @@ export const useAuth = create<AuthState>((set, get) => ({
     const response = await authAPI.login({ email, password, twoFactorCode });
     const { user, token, refreshToken } = response.data.data;
 
-    localStorage.setItem('ndiipano_token', token);
-    localStorage.setItem('ndiipano_refresh_token', refreshToken);
-    localStorage.setItem('ndiipano_user', JSON.stringify(user));
+    localStorage.setItem('ndipaano_token', token);
+    localStorage.setItem('ndipaano_refresh_token', refreshToken);
+    localStorage.setItem('ndipaano_user', JSON.stringify(user));
 
     set({ user, token, isAuthenticated: true, isLoading: false });
   },
@@ -87,23 +87,23 @@ export const useAuth = create<AuthState>((set, get) => ({
     const response = await authAPI.register(data);
     const { user, token, refreshToken } = response.data.data;
 
-    localStorage.setItem('ndiipano_token', token);
-    localStorage.setItem('ndiipano_refresh_token', refreshToken);
-    localStorage.setItem('ndiipano_user', JSON.stringify(user));
+    localStorage.setItem('ndipaano_token', token);
+    localStorage.setItem('ndipaano_refresh_token', refreshToken);
+    localStorage.setItem('ndipaano_user', JSON.stringify(user));
 
     set({ user, token, isAuthenticated: true, isLoading: false });
   },
 
   logout: () => {
-    localStorage.removeItem('ndiipano_token');
-    localStorage.removeItem('ndiipano_refresh_token');
-    localStorage.removeItem('ndiipano_user');
+    localStorage.removeItem('ndipaano_token');
+    localStorage.removeItem('ndipaano_refresh_token');
+    localStorage.removeItem('ndipaano_user');
     set({ user: null, token: null, isAuthenticated: false });
     window.location.href = '/login';
   },
 
   setUser: (user: User) => {
-    localStorage.setItem('ndiipano_user', JSON.stringify(user));
+    localStorage.setItem('ndipaano_user', JSON.stringify(user));
     set({ user });
   },
 
@@ -111,7 +111,7 @@ export const useAuth = create<AuthState>((set, get) => ({
     try {
       const response = await usersAPI.getProfile();
       const user = response.data.data;
-      localStorage.setItem('ndiipano_user', JSON.stringify(user));
+      localStorage.setItem('ndipaano_user', JSON.stringify(user));
       set({ user });
     } catch {
       get().logout();

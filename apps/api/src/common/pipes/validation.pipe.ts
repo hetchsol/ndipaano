@@ -1,7 +1,7 @@
 import { ValidationPipe } from '@nestjs/common';
 
 /**
- * Pre-configured global validation pipe for the Ndiipano API.
+ * Pre-configured global validation pipe for the Ndipaano API.
  *
  * Configuration:
  *  - transform: true  -- Automatically transform payloads to DTO class instances

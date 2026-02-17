@@ -15,9 +15,9 @@ export const SOCKET_URL = Platform.select({
 
 // Secure Store Keys
 export const STORAGE_KEYS = {
-  ACCESS_TOKEN: 'ndiipano_access_token',
-  REFRESH_TOKEN: 'ndiipano_refresh_token',
-  USER_DATA: 'ndiipano_user_data',
+  ACCESS_TOKEN: 'ndipaano_access_token',
+  REFRESH_TOKEN: 'ndipaano_refresh_token',
+  USER_DATA: 'ndipaano_user_data',
 } as const;
 
 // Colors - matching web theme

@@ -68,7 +68,7 @@ export default function BookingsPage() {
   });
 
   const BookingCard = ({ booking }: { booking: Booking }) => (
-    <Link href={`/bookings/${booking.id}`}>
+    <Link href={`/patient/bookings/${booking.id}`}>
       <Card className="cursor-pointer transition-all hover:border-primary-200 hover:shadow-md">
         <CardContent className="p-4">
           <div className="flex items-start justify-between">

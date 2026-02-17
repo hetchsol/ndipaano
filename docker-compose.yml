@@ -3,25 +3,25 @@ version: '3.8'
 services:
   postgres:
     image: postgis/postgis:16-3.4
-    container_name: ndiipano-postgres
+    container_name: ndipaano-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: ndiipano
-      POSTGRES_PASSWORD: ndiipano_dev
-      POSTGRES_DB: ndiipano
+      POSTGRES_USER: ndipaano
+      POSTGRES_PASSWORD: ndipaano_dev
+      POSTGRES_DB: ndipaano
     ports:
       - '5432:5432'
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ndiipano']
+      test: ['CMD-SHELL', 'pg_isready -U ndipaano']
       interval: 10s
       timeout: 5s
       retries: 5
 
   redis:
     image: redis:7-alpine
-    container_name: ndiipano-redis
+    container_name: ndipaano-redis
     restart: unless-stopped
     ports:
       - '6379:6379'
@@ -35,7 +35,7 @@ services:
 
   minio:
     image: minio/minio
-    container_name: ndiipano-minio
+    container_name: ndipaano-minio
     restart: unless-stopped
     environment:
       MINIO_ROOT_USER: minioadmin

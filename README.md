@@ -1,4 +1,4 @@
-# Ndiipano - Medical Home Care Platform
+# Ndipaano - Medical Home Care Platform
 
 A comprehensive medical home care platform connecting Zambian patients with healthcare practitioners for on-demand and scheduled services. Built with compliance for HPCZ, ZAMRA, DPA No. 3 of 2021, and NHIMA regulations.
 
@@ -29,8 +29,8 @@ A comprehensive medical home care platform connecting Zambian patients with heal
 ### 1. Clone & Install
 
 ```bash
-git clone <repo-url> ndiipano
-cd ndiipano
+git clone <repo-url> ndipaano
+cd ndipaano
 pnpm install
 ```
 
@@ -81,18 +81,18 @@ pnpm --filter mobile dev        # Mobile (Expo)
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@ndiipano.co.zm | Password123! |
+| Admin | admin@ndipaano.co.zm | Password123! |
 | Patient | chanda.mwamba@gmail.com | Password123! |
 | Patient | mutale.banda@gmail.com | Password123! |
-| Doctor | dr.tembo@ndiipano.co.zm | Password123! |
-| Nurse | nurse.phiri@ndiipano.co.zm | Password123! |
-| Physiotherapist | physio.lungu@ndiipano.co.zm | Password123! |
-| Unverified | dr.pending@ndiipano.co.zm | Password123! |
+| Doctor | dr.tembo@ndipaano.co.zm | Password123! |
+| Nurse | nurse.phiri@ndipaano.co.zm | Password123! |
+| Physiotherapist | physio.lungu@ndipaano.co.zm | Password123! |
+| Unverified | dr.pending@ndipaano.co.zm | Password123! |
 
 ## Project Structure
 
 ```
-ndiipano/
+ndipaano/
 ├── apps/
 │   ├── api/          # NestJS backend (13 modules)
 │   ├── web/          # Next.js web portal

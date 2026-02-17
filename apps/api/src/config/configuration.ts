@@ -1,5 +1,5 @@
 /**
- * Ndiipano API - Configuration Factory
+ * Ndipaano API - Configuration Factory
  *
  * Centralised, typed configuration loaded from environment variables.
  * All secrets and environment-specific values are read here and exposed
@@ -17,7 +17,7 @@ export default () => ({
   // Database (PostgreSQL + PostGIS)
   // ---------------------------------------------------------------------------
   database: {
-    url: process.env.DATABASE_URL || 'postgresql://ndiipano:ndiipano@localhost:5432/ndiipano?schema=public',
+    url: process.env.DATABASE_URL || 'postgresql://ndipaano:ndipaano@localhost:5432/ndipaano?schema=public',
   },
 
   // ---------------------------------------------------------------------------
@@ -37,7 +37,7 @@ export default () => ({
     secret: process.env.JWT_SECRET || 'CHANGE_ME_IN_PRODUCTION',
     accessTokenExpiry: process.env.JWT_ACCESS_TOKEN_EXPIRY || '15m',
     refreshTokenExpiry: process.env.JWT_REFRESH_TOKEN_EXPIRY || '7d',
-    issuer: process.env.JWT_ISSUER || 'ndiipano-api',
+    issuer: process.env.JWT_ISSUER || 'ndipaano-api',
   },
 
   // ---------------------------------------------------------------------------
@@ -60,7 +60,7 @@ export default () => ({
   // ---------------------------------------------------------------------------
   s3: {
     region: process.env.AWS_S3_REGION || 'af-south-1',
-    bucket: process.env.AWS_S3_BUCKET || 'ndiipano-uploads',
+    bucket: process.env.AWS_S3_BUCKET || 'ndipaano-uploads',
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
     endpoint: process.env.AWS_S3_ENDPOINT || undefined,
@@ -72,7 +72,7 @@ export default () => ({
   sms: {
     provider: process.env.SMS_PROVIDER || 'zamtel', // zamtel | bongolive | africastalking
     apiKey: process.env.SMS_API_KEY || '',
-    senderId: process.env.SMS_SENDER_ID || 'Ndiipano',
+    senderId: process.env.SMS_SENDER_ID || 'Ndipaano',
   },
 
   // ---------------------------------------------------------------------------
@@ -84,8 +84,8 @@ export default () => ({
     secure: process.env.SMTP_SECURE === 'true',
     user: process.env.SMTP_USER || '',
     password: process.env.SMTP_PASSWORD || '',
-    fromAddress: process.env.EMAIL_FROM || 'noreply@ndiipano.co.zm',
-    fromName: process.env.EMAIL_FROM_NAME || 'Ndiipano Health',
+    fromAddress: process.env.EMAIL_FROM || 'noreply@ndipaano.co.zm',
+    fromName: process.env.EMAIL_FROM_NAME || 'Ndipaano Health',
   },
 
   // ---------------------------------------------------------------------------
@@ -107,7 +107,7 @@ export default () => ({
   // Two-Factor Authentication (TOTP)
   // ---------------------------------------------------------------------------
   twoFactor: {
-    issuer: process.env.TOTP_ISSUER || 'Ndiipano',
+    issuer: process.env.TOTP_ISSUER || 'Ndipaano',
     algorithm: 'SHA1',
     digits: 6,
     period: 30,

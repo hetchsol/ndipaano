@@ -395,7 +395,7 @@ export default function ProfileScreen() {
         <Text style={styles.logoutButtonText}>Logout</Text>
       </TouchableOpacity>
 
-      <Text style={styles.version}>Ndiipano v0.1.0</Text>
+      <Text style={styles.version}>Ndipaano v0.1.0</Text>
     </ScrollView>
   );
 }

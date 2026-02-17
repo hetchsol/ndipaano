@@ -151,7 +151,7 @@ export default function RegisterScreen({ navigation }: AuthStackScreenProps<'Reg
             <Text style={styles.backButtonText}>{'\u2190'} Back</Text>
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Create Account</Text>
-          <Text style={styles.headerSubtitle}>Join Ndiipano Medical Home Care</Text>
+          <Text style={styles.headerSubtitle}>Join Ndipaano Medical Home Care</Text>
         </View>
 
         {/* Role Toggle */}

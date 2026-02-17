@@ -3,11 +3,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { bookingsAPI } from '../../../../lib/api';
-import { formatDate, formatCurrency, getStatusColor } from '../../../../lib/utils';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../../../components/ui/card';
-import { Button } from '../../../../components/ui/button';
-import { Badge } from '../../../../components/ui/badge';
+import { bookingsAPI } from '../../../../../lib/api';
+import { formatDate, formatCurrency, getStatusColor } from '../../../../../lib/utils';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../../../../components/ui/card';
+import { Button } from '../../../../../components/ui/button';
+import { Badge } from '../../../../../components/ui/badge';
 import {
   Dialog,
   DialogHeader,
@@ -15,7 +15,7 @@ import {
   DialogDescription,
   DialogClose,
   DialogFooter,
-} from '../../../../components/ui/dialog';
+} from '../../../../../components/ui/dialog';
 import {
   ArrowLeft,
   Clock,
@@ -116,7 +116,7 @@ export default function BookingDetailPage() {
       await bookingsAPI.cancel(bookingId, cancelReason);
       toast.success('Booking cancelled successfully.');
       setShowCancelDialog(false);
-      router.push('/bookings');
+      router.push('/patient/bookings');
     } catch {
       toast.error('Failed to cancel booking.');
     } finally {
@@ -147,7 +147,7 @@ export default function BookingDetailPage() {
         <p className="mt-2 text-sm text-gray-500">
           The booking you are looking for does not exist or you do not have access.
         </p>
-        <Button onClick={() => router.push('/bookings')} className="mt-4">
+        <Button onClick={() => router.push('/patient/bookings')} className="mt-4">
           Back to Bookings
         </Button>
       </div>

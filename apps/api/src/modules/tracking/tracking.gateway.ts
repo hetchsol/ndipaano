@@ -129,7 +129,7 @@ export class TrackingGateway
       });
     } catch (error) {
       this.logger.error(
-        `Connection error for client ${client.id}: ${error.message}`,
+        `Connection error for client ${client.id}: ${(error as Error).message}`,
       );
       client.emit('error', { message: 'Authentication failed' });
       client.disconnect();
@@ -391,7 +391,7 @@ export class TrackingGateway
    */
   private async verifyToken(token: string): Promise<any | null> {
     try {
-      const secret = this.configService.get<string>('JWT_SECRET', 'ndiipano-jwt-secret-change-in-production');
+      const secret = this.configService.get<string>('JWT_SECRET', 'ndipaano-jwt-secret-change-in-production');
       return await this.jwtService.verifyAsync(token, { secret });
     } catch {
       return null;

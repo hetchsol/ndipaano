@@ -91,7 +91,7 @@ export class UploadDocumentDto {
 
   @ApiProperty({
     description: 'URL where the file is stored (S3, etc.)',
-    example: 'https://ndiipano-docs.s3.af-south-1.amazonaws.com/practitioners/abc123/hpcz-cert.pdf',
+    example: 'https://ndipaano-docs.s3.af-south-1.amazonaws.com/practitioners/abc123/hpcz-cert.pdf',
   })
   @IsString()
   @MinLength(1)

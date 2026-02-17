@@ -26,6 +26,7 @@ import {
   CurrentUser,
   Roles,
   UserRole,
+  PRACTITIONER_ROLES,
   JwtAuthGuard,
   RolesGuard,
   HpczVerifiedGuard,
@@ -42,7 +43,7 @@ export class PrescriptionsController {
   // POST /prescriptions
   // ---------------------------------------------------------------------------
   @Post()
-  @Roles(UserRole.PRACTITIONER)
+  @Roles(...PRACTITIONER_ROLES)
   @UseGuards(HpczVerifiedGuard)
   @ApiOperation({
     summary: 'Create a new prescription',
@@ -89,7 +90,7 @@ export class PrescriptionsController {
   // (must be above :id route to avoid param conflict)
   // ---------------------------------------------------------------------------
   @Get('controlled-substances')
-  @Roles(UserRole.PRACTITIONER, UserRole.ADMIN, UserRole.SUPER_ADMIN)
+  @Roles(...PRACTITIONER_ROLES, UserRole.ADMIN, UserRole.SUPER_ADMIN)
   @ApiOperation({
     summary: 'List controlled substance prescriptions',
     description:

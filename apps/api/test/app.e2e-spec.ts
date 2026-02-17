@@ -3,7 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 
-describe('Ndiipano API (e2e)', () => {
+describe('Ndipaano API (e2e)', () => {
   let app: INestApplication;
   let accessToken: string;
   let practitionerToken: string;

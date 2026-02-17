@@ -111,7 +111,7 @@ export default function LandingPage() {
               <span className="text-secondary-400">Doorstep</span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-200">
-              Ndiipano connects Zambian patients with verified healthcare practitioners
+              Ndipaano connects Zambian patients with verified healthcare practitioners
               for professional home-based medical care. Book home visits, virtual
               consultations, and manage your health records -- all in one secure platform.
             </p>
@@ -206,7 +206,7 @@ export default function LandingPage() {
               How It Works
             </h2>
             <p className="mt-4 text-lg text-gray-500">
-              Getting quality healthcare at home is simple with Ndiipano.
+              Getting quality healthcare at home is simple with Ndipaano.
             </p>
           </div>
 
@@ -285,7 +285,7 @@ export default function LandingPage() {
             Ready to Get Started?
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-500">
-            Join thousands of Zambians who trust Ndiipano for their healthcare needs.
+            Join thousands of Zambians who trust Ndipaano for their healthcare needs.
             Register today and experience healthcare that comes to you.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">

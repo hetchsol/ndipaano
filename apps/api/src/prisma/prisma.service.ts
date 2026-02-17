@@ -4,11 +4,11 @@ import {
   OnModuleDestroy,
   Logger,
 } from '@nestjs/common';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 @Injectable()
 export class PrismaService
-  extends PrismaClient<Prisma.PrismaClientOptions, 'query' | 'info' | 'warn' | 'error'>
+  extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
   private readonly logger = new Logger(PrismaService.name);
@@ -17,41 +17,12 @@ export class PrismaService
     super({
       log:
         process.env.NODE_ENV === 'development'
-          ? [
-              { emit: 'event', level: 'query' },
-              { emit: 'event', level: 'info' },
-              { emit: 'event', level: 'warn' },
-              { emit: 'event', level: 'error' },
-            ]
-          : [
-              { emit: 'event', level: 'warn' },
-              { emit: 'event', level: 'error' },
-            ],
+          ? ['query', 'info', 'warn', 'error']
+          : ['warn', 'error'],
     });
   }
 
   async onModuleInit(): Promise<void> {
-    // Attach logging listeners
-    this.$on('query', (event: Prisma.QueryEvent) => {
-      if (process.env.NODE_ENV === 'development') {
-        this.logger.debug(
-          `Query: ${event.query} | Params: ${event.params} | Duration: ${event.duration}ms`,
-        );
-      }
-    });
-
-    this.$on('info', (event: Prisma.LogEvent) => {
-      this.logger.log(event.message);
-    });
-
-    this.$on('warn', (event: Prisma.LogEvent) => {
-      this.logger.warn(event.message);
-    });
-
-    this.$on('error', (event: Prisma.LogEvent) => {
-      this.logger.error(event.message);
-    });
-
     // Connect to database
     try {
       await this.$connect();

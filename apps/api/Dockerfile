@@ -1,5 +1,5 @@
 # =============================================================================
-# Ndiipano API - Multi-stage Docker build for Render deployment
+# Ndipaano API - Multi-stage Docker build for Render deployment
 # =============================================================================
 
 # ---------------------------------------------------------------------------
@@ -61,8 +61,8 @@ FROM node:20-alpine AS production
 RUN apk add --no-cache libc6-compat openssl dumb-init
 
 # Run as non-root user for security
-RUN addgroup --system --gid 1001 ndiipano && \
-    adduser --system --uid 1001 ndiipano
+RUN addgroup --system --gid 1001 ndipaano && \
+    adduser --system --uid 1001 ndipaano
 
 WORKDIR /app
 
@@ -71,24 +71,24 @@ ENV NODE_ENV=production
 ENV PORT=3001
 
 # Copy built application
-COPY --from=builder --chown=ndiipano:ndiipano /app/apps/api/dist ./dist
-COPY --from=builder --chown=ndiipano:ndiipano /app/apps/api/package.json ./
-COPY --from=builder --chown=ndiipano:ndiipano /app/apps/api/prisma ./prisma
+COPY --from=builder --chown=ndipaano:ndipaano /app/apps/api/dist ./dist
+COPY --from=builder --chown=ndipaano:ndipaano /app/apps/api/package.json ./
+COPY --from=builder --chown=ndipaano:ndipaano /app/apps/api/prisma ./prisma
 
 # Copy node_modules (production only would be ideal, but for monorepo compat)
-COPY --from=builder --chown=ndiipano:ndiipano /app/node_modules ./node_modules
-COPY --from=builder --chown=ndiipano:ndiipano /app/apps/api/node_modules ./apps_api_node_modules
+COPY --from=builder --chown=ndipaano:ndipaano /app/node_modules ./node_modules
+COPY --from=builder --chown=ndipaano:ndipaano /app/apps/api/node_modules ./apps_api_node_modules
 
 # Merge node_modules if needed (workspace deps)
 RUN cp -rn ./apps_api_node_modules/* ./node_modules/ 2>/dev/null || true && \
     rm -rf ./apps_api_node_modules
 
 # Copy Prisma generated client
-COPY --from=builder --chown=ndiipano:ndiipano /app/apps/api/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=ndiipano:ndiipano /app/apps/api/node_modules/@prisma ./node_modules/@prisma
+COPY --from=builder --chown=ndipaano:ndipaano /app/apps/api/node_modules/.prisma ./node_modules/.prisma
+COPY --from=builder --chown=ndipaano:ndipaano /app/apps/api/node_modules/@prisma ./node_modules/@prisma
 
 # Switch to non-root user
-USER ndiipano
+USER ndipaano
 
 # Expose the API port
 EXPOSE 3001

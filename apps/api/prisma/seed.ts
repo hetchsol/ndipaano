@@ -33,11 +33,11 @@ async function main() {
   // --- Admin User ---
   const admin = await prisma.user.create({
     data: {
-      email: 'admin@ndiipano.co.zm',
+      email: 'admin@ndipaano.co.zm',
       phone: '+260970000001',
       passwordHash,
       firstName: 'Admin',
-      lastName: 'Ndiipano',
+      lastName: 'Ndipaano',
       role: UserRole.ADMIN,
       isEmailVerified: true,
       isPhoneVerified: true,
@@ -107,7 +107,7 @@ async function main() {
   // --- Practitioner Users ---
   const doctor1 = await prisma.user.create({
     data: {
-      email: 'dr.tembo@ndiipano.co.zm',
+      email: 'dr.tembo@ndipaano.co.zm',
       phone: '+260975678901',
       passwordHash,
       firstName: 'Dr. Joseph',
@@ -138,7 +138,7 @@ async function main() {
 
   const nurse1 = await prisma.user.create({
     data: {
-      email: 'nurse.phiri@ndiipano.co.zm',
+      email: 'nurse.phiri@ndipaano.co.zm',
       phone: '+260976789012',
       passwordHash,
       firstName: 'Mercy',
@@ -169,7 +169,7 @@ async function main() {
 
   const physio1 = await prisma.user.create({
     data: {
-      email: 'physio.lungu@ndiipano.co.zm',
+      email: 'physio.lungu@ndipaano.co.zm',
       phone: '+260977890123',
       passwordHash,
       firstName: 'Emmanuel',
@@ -200,7 +200,7 @@ async function main() {
 
   const unverifiedDoc = await prisma.user.create({
     data: {
-      email: 'dr.pending@ndiipano.co.zm',
+      email: 'dr.pending@ndipaano.co.zm',
       phone: '+260978901234',
       passwordHash,
       firstName: 'Dr. Sarah',
@@ -621,13 +621,13 @@ async function main() {
 
   console.log('\n--- Seed Complete ---');
   console.log('Login credentials for all users: Password123!');
-  console.log('Admin:        admin@ndiipano.co.zm');
+  console.log('Admin:        admin@ndipaano.co.zm');
   console.log('Patient 1:    chanda.mwamba@gmail.com');
   console.log('Patient 2:    mutale.banda@gmail.com');
-  console.log('Doctor:       dr.tembo@ndiipano.co.zm');
-  console.log('Nurse:        nurse.phiri@ndiipano.co.zm');
-  console.log('Physio:       physio.lungu@ndiipano.co.zm');
-  console.log('Unverified:   dr.pending@ndiipano.co.zm');
+  console.log('Doctor:       dr.tembo@ndipaano.co.zm');
+  console.log('Nurse:        nurse.phiri@ndipaano.co.zm');
+  console.log('Physio:       physio.lungu@ndipaano.co.zm');
+  console.log('Unverified:   dr.pending@ndipaano.co.zm');
 }
 
 main()

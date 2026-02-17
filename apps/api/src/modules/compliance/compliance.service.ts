@@ -24,7 +24,7 @@ export class ComplianceService {
    * List audit logs with pagination and filters. ADMIN only.
    */
   async getAuditLogs(query: AuditLogQueryDto) {
-    const { userId, action, resourceType, startDate, endDate, page, limit } = query;
+    const { userId, action, resourceType, startDate, endDate, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -335,7 +335,7 @@ export class ComplianceService {
    * List breach notifications (ADMIN).
    */
   async getBreachNotifications(query: BreachQueryDto) {
-    const { page, limit, severity } = query;
+    const { page = 1, limit = 20, severity } = query;
     const skip = (page - 1) * limit;
 
     const where: any = {};

@@ -27,7 +27,7 @@ import {
 import { Public, CurrentUser } from '../../common';
 
 /**
- * Authentication controller for the Ndiipano Medical Home Care Platform.
+ * Authentication controller for the Ndipaano Medical Home Care Platform.
  * Handles user registration, login, 2FA, token refresh, and password management.
  */
 @ApiTags('Authentication')

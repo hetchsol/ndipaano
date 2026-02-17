@@ -20,8 +20,8 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@ndiipano/shared": ["../../packages/shared/src"],
-      "@ndiipano/shared/*": ["../../packages/shared/src/*"]
+      "@ndipaano/shared": ["../../packages/shared/src"],
+      "@ndipaano/shared/*": ["../../packages/shared/src/*"]
     },
     "baseUrl": "."
   },

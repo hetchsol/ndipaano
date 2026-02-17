@@ -1,12 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { prescriptionsAPI } from '../../../lib/api';
-import { formatDate } from '../../../lib/utils';
-import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
-import { Badge } from '../../../components/ui/badge';
-import { Select } from '../../../components/ui/select';
+import { prescriptionsAPI } from '../../../../lib/api';
+import { formatDate } from '../../../../lib/utils';
+import { Card, CardHeader, CardTitle, CardContent } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
+import { Badge } from '../../../../components/ui/badge';
+import { Select } from '../../../../components/ui/select';
 import {
   Table,
   TableHeader,
@@ -14,7 +14,7 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from '../../../components/ui/table';
+} from '../../../../components/ui/table';
 import {
   Pill,
   RefreshCw,

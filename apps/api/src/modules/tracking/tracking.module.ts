@@ -12,7 +12,7 @@ import { TrackingService } from './tracking.service';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET', 'ndiipano-jwt-secret-change-in-production'),
+        secret: configService.get<string>('JWT_SECRET', 'ndipaano-jwt-secret-change-in-production'),
         signOptions: {
           expiresIn: configService.get<string>('JWT_EXPIRATION', '1h'),
         },

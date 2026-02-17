@@ -80,21 +80,21 @@ export default function PatientDashboard() {
       icon: FileText,
       label: 'Medical Records',
       description: 'View your health records',
-      href: '/records',
+      href: '/patient/records',
       color: 'bg-accent-50 text-accent-600',
     },
     {
       icon: Pill,
       label: 'Prescriptions',
       description: 'View active prescriptions',
-      href: '/prescriptions',
+      href: '/patient/prescriptions',
       color: 'bg-secondary-50 text-secondary-700',
     },
     {
       icon: CalendarDays,
       label: 'My Bookings',
       description: 'Manage your appointments',
-      href: '/bookings',
+      href: '/patient/bookings',
       color: 'bg-purple-50 text-purple-700',
     },
   ];
@@ -134,7 +134,7 @@ export default function PatientDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Upcoming Appointments</CardTitle>
-              <Link href="/bookings">
+              <Link href="/patient/bookings">
                 <Button variant="ghost" size="sm">
                   View All <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
@@ -150,7 +150,7 @@ export default function PatientDashboard() {
               ) : upcomingBookings.length > 0 ? (
                 <div className="space-y-4">
                   {upcomingBookings.map((booking) => (
-                    <Link key={booking.id} href={`/bookings/${booking.id}`}>
+                    <Link key={booking.id} href={`/patient/bookings/${booking.id}`}>
                       <div className="flex items-center gap-4 rounded-lg border border-gray-100 p-4 transition-colors hover:bg-gray-50">
                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-50">
                           {booking.type === 'virtual' ? (
@@ -201,7 +201,7 @@ export default function PatientDashboard() {
           <Card className="mt-6">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Recent Medical Records</CardTitle>
-              <Link href="/records">
+              <Link href="/patient/records">
                 <Button variant="ghost" size="sm">
                   View All <ArrowRight className="ml-1 h-4 w-4" />
                 </Button>
@@ -217,7 +217,7 @@ export default function PatientDashboard() {
               ) : recentRecords.length > 0 ? (
                 <div className="space-y-3">
                   {recentRecords.map((record) => (
-                    <Link key={record.id} href={`/records`}>
+                    <Link key={record.id} href={`/patient/records`}>
                       <div className="flex items-center gap-3 rounded-md p-3 transition-colors hover:bg-gray-50">
                         <FileText className="h-5 w-5 text-accent-600" />
                         <div className="flex-1">

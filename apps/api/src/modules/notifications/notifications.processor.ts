@@ -163,15 +163,15 @@ export class NotificationsProcessor {
    *   const msg = {
    *     to: user.email,
    *     from: {
-   *       email: 'notifications@ndiipano.co.zm',
-   *       name: 'Ndiipano Health',
+   *       email: 'notifications@ndipaano.co.zm',
+   *       name: 'Ndipaano Health',
    *     },
    *     subject: data.title,
    *     text: data.body,
    *     html: `
    *       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
    *         <div style="background: #0d9488; padding: 20px; text-align: center;">
-   *           <h1 style="color: white; margin: 0;">Ndiipano</h1>
+   *           <h1 style="color: white; margin: 0;">Ndipaano</h1>
    *         </div>
    *         <div style="padding: 20px;">
    *           <p>Hello ${user.firstName},</p>
@@ -179,7 +179,7 @@ export class NotificationsProcessor {
    *           <p>${data.body}</p>
    *         </div>
    *         <div style="background: #f3f4f6; padding: 15px; text-align: center; font-size: 12px; color: #6b7280;">
-   *           <p>Ndiipano Medical Home Care Platform</p>
+   *           <p>Ndipaano Medical Home Care Platform</p>
    *           <p>Lusaka, Zambia</p>
    *         </div>
    *       </div>

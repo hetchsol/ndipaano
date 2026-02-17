@@ -32,6 +32,7 @@ import {
   CurrentUser,
   Roles,
   UserRole,
+  PRACTITIONER_ROLES,
   Public,
   RolesGuard,
   JwtAuthGuard,
@@ -116,7 +117,7 @@ export class PaymentsController {
   // ---------------------------------------------------------------------------
 
   @Get('earnings')
-  @Roles(UserRole.PRACTITIONER)
+  @Roles(...PRACTITIONER_ROLES)
   @ApiOperation({
     summary: 'Get earnings summary',
     description:
@@ -184,7 +185,7 @@ export class PaymentsController {
   // ---------------------------------------------------------------------------
 
   @Post('payout-request')
-  @Roles(UserRole.PRACTITIONER)
+  @Roles(...PRACTITIONER_ROLES)
   @ApiOperation({
     summary: 'Request payout of earned funds',
     description:

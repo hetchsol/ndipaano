@@ -26,6 +26,7 @@ import {
   CurrentUser,
   Roles,
   UserRole,
+  PRACTITIONER_ROLES,
   RolesGuard,
   JwtAuthGuard,
   HpczVerifiedGuard,
@@ -45,7 +46,7 @@ export class MedicalRecordsController {
   // ---------------------------------------------------------------------------
 
   @Post()
-  @Roles(UserRole.PRACTITIONER)
+  @Roles(...PRACTITIONER_ROLES)
   @UseGuards(HpczVerifiedGuard)
   @ApiOperation({
     summary: 'Create a medical record',
@@ -142,7 +143,7 @@ export class MedicalRecordsController {
   // ---------------------------------------------------------------------------
 
   @Patch(':id')
-  @Roles(UserRole.PRACTITIONER)
+  @Roles(...PRACTITIONER_ROLES)
   @UseGuards(HpczVerifiedGuard)
   @ApiOperation({
     summary: 'Update a medical record',

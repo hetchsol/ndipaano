@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "Ndiipano",
-    "slug": "ndiipano",
+    "name": "Ndipaano",
+    "slug": "ndipaano",
     "version": "0.1.0",
     "orientation": "portrait",
-    "scheme": "ndiipano",
+    "scheme": "ndipaano",
     "userInterfaceStyle": "light",
     "splash": {
       "backgroundColor": "#166534"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.ndiipano.app",
+      "bundleIdentifier": "com.ndipaano.app",
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "We need your location to find nearby practitioners and enable home visit tracking."
       }
@@ -20,7 +20,7 @@
       "adaptiveIcon": {
         "backgroundColor": "#166534"
       },
-      "package": "com.ndiipano.app",
+      "package": "com.ndipaano.app",
       "permissions": ["ACCESS_FINE_LOCATION", "ACCESS_COARSE_LOCATION"]
     },
     "plugins": [

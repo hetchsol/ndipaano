@@ -1,5 +1,5 @@
 {
-  "name": "@ndiipano/mobile",
+  "name": "@ndipaano/mobile",
   "version": "0.1.0",
   "private": true,
   "main": "expo-router/entry",
@@ -32,7 +32,7 @@
     "socket.io-client": "^4.7.5",
     "date-fns": "^3.6.0",
     "react-native-toast-message": "^2.2.0",
-    "@ndiipano/shared": "workspace:*"
+    "@ndipaano/shared": "workspace:*"
   },
   "devDependencies": {
     "@babel/core": "^7.24.0",

@@ -8,7 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ConsentType } from '@prisma/client';
+import { Prisma, ConsentType } from '@prisma/client';
 import {
   CreateMedicalRecordDto,
   UpdateMedicalRecordDto,
@@ -88,7 +88,7 @@ export class MedicalRecordsService {
         bookingId: dto.bookingId || null,
         diagnosis: encryptedDiagnosis,
         treatmentNotes: encryptedTreatmentNotes,
-        vitalsJson: dto.vitalsJson ? (dto.vitalsJson as unknown as object) : null,
+        vitalsJson: dto.vitalsJson ? (dto.vitalsJson as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
       },
       include: {
         patient: {
@@ -453,7 +453,7 @@ export class MedicalRecordsService {
 
       return decrypted;
     } catch (error) {
-      this.logger.error(`Failed to decrypt field: ${error.message}`);
+      this.logger.error(`Failed to decrypt field: ${(error as Error).message}`);
       // Return a placeholder rather than exposing encrypted data or crashing
       return '[Decryption failed - data may be corrupted]';
     }

@@ -18,13 +18,14 @@
     "strictNullChecks": true,
     "noImplicitAny": true,
     "strictBindCallApply": true,
+    "strictPropertyInitialization": false,
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "paths": {
-      "@ndiipano/shared": ["../../packages/shared/src"],
-      "@ndiipano/shared/*": ["../../packages/shared/src/*"]
+      "@ndipaano/shared": ["../../packages/shared/src"],
+      "@ndipaano/shared/*": ["../../packages/shared/src/*"]
     }
   },
   "include": ["src/**/*"],

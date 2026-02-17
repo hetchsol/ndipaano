@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { paymentsAPI } from '../../../lib/api';
-import { formatDate, formatCurrency } from '../../../lib/utils';
-import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
-import { Badge } from '../../../components/ui/badge';
+import { paymentsAPI } from '../../../../lib/api';
+import { formatDate, formatCurrency } from '../../../../lib/utils';
+import { Card, CardHeader, CardTitle, CardContent } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
+import { Badge } from '../../../../components/ui/badge';
 import {
   Table,
   TableHeader,
@@ -13,7 +13,7 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from '../../../components/ui/table';
+} from '../../../../components/ui/table';
 import {
   Dialog,
   DialogHeader,
@@ -21,9 +21,9 @@ import {
   DialogDescription,
   DialogClose,
   DialogFooter,
-} from '../../../components/ui/dialog';
-import { Input } from '../../../components/ui/input';
-import { Select } from '../../../components/ui/select';
+} from '../../../../components/ui/dialog';
+import { Input } from '../../../../components/ui/input';
+import { Select } from '../../../../components/ui/select';
 import { toast } from 'sonner';
 import {
   DollarSign,

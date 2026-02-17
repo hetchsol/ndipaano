@@ -1,14 +1,15 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { useAuth } from '../../../hooks/use-auth';
-import { practitionersAPI, usersAPI } from '../../../lib/api';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
-import { Input } from '../../../components/ui/input';
-import { Badge } from '../../../components/ui/badge';
-import { Select } from '../../../components/ui/select';
+import { useAuth } from '../../../../hooks/use-auth';
+import { practitionersAPI, usersAPI } from '../../../../lib/api';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
+import { Input } from '../../../../components/ui/input';
+import { Badge } from '../../../../components/ui/badge';
+import { Select } from '../../../../components/ui/select';
 import { toast } from 'sonner';
+import type { LucideIcon } from 'lucide-react';
 import {
   User,
   Upload,
@@ -127,7 +128,7 @@ export default function PractitionerProfilePage() {
     rejected: { variant: 'error', label: 'Verification Rejected' },
   };
 
-  const docStatusConfig: Record<string, { icon: React.ElementType; color: string; label: string }> = {
+  const docStatusConfig: Record<string, { icon: LucideIcon; color: string; label: string }> = {
     pending: { icon: Clock, color: 'text-yellow-600', label: 'Pending Review' },
     verified: { icon: CheckCircle, color: 'text-green-600', label: 'Verified' },
     rejected: { icon: AlertCircle, color: 'text-red-600', label: 'Rejected' },

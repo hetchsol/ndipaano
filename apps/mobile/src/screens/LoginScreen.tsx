@@ -78,7 +78,7 @@ export default function LoginScreen({ navigation }: AuthStackScreenProps<'Login'
           <View style={styles.logoCircle}>
             <Text style={styles.logoText}>N</Text>
           </View>
-          <Text style={styles.brandName}>Ndiipano</Text>
+          <Text style={styles.brandName}>Ndipaano</Text>
           <Text style={styles.tagline}>Medical Home Care</Text>
         </View>
 

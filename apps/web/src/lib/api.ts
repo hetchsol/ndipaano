@@ -14,7 +14,7 @@ const api = axios.create({
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('ndiipano_token');
+      const token = localStorage.getItem('ndipaano_token');
       if (token && config.headers) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -30,27 +30,27 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
-        const refreshToken = localStorage.getItem('ndiipano_refresh_token');
+        const refreshToken = localStorage.getItem('ndipaano_refresh_token');
         if (refreshToken) {
           try {
             const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
               refreshToken,
             });
             const { token } = response.data.data;
-            localStorage.setItem('ndiipano_token', token);
+            localStorage.setItem('ndipaano_token', token);
             if (error.config && error.config.headers) {
               error.config.headers.Authorization = `Bearer ${token}`;
               return api(error.config);
             }
           } catch {
-            localStorage.removeItem('ndiipano_token');
-            localStorage.removeItem('ndiipano_refresh_token');
-            localStorage.removeItem('ndiipano_user');
+            localStorage.removeItem('ndipaano_token');
+            localStorage.removeItem('ndipaano_refresh_token');
+            localStorage.removeItem('ndipaano_user');
             window.location.href = '/login';
           }
         } else {
-          localStorage.removeItem('ndiipano_token');
-          localStorage.removeItem('ndiipano_user');
+          localStorage.removeItem('ndipaano_token');
+          localStorage.removeItem('ndipaano_user');
           window.location.href = '/login';
         }
       }

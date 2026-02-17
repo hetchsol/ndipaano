@@ -122,11 +122,11 @@ export class PaymentsService {
     });
 
     // Determine flow based on payment method
-    const isMobileMoney = [
+    const isMobileMoney = ([
       PaymentMethod.MOBILE_MONEY_MTN,
       PaymentMethod.MOBILE_MONEY_AIRTEL,
       PaymentMethod.MOBILE_MONEY_ZAMTEL,
-    ].includes(dto.paymentMethod);
+    ] as PaymentMethod[]).includes(dto.paymentMethod);
 
     if (isMobileMoney) {
       // Mobile money: return a payment intent (reference) for the client
@@ -199,7 +199,7 @@ export class PaymentsService {
     } catch (error) {
       this.logger.error(
         `Paystack initialization failed for payment ${payment.id}`,
-        error?.response?.data || error.message,
+        (error as any)?.response?.data || (error as Error).message,
       );
 
       // Update payment to FAILED
@@ -209,7 +209,7 @@ export class PaymentsService {
           status: PaymentStatus.FAILED,
           metadata: {
             ...(payment.metadata as object),
-            error: error?.response?.data?.message || error.message,
+            error: (error as any)?.response?.data?.message || (error as Error).message,
           },
         },
       });

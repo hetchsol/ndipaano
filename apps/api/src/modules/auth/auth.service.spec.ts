@@ -43,7 +43,7 @@ describe('AuthService', () => {
         JWT_REFRESH_SECRET: 'test-refresh-secret',
         JWT_EXPIRATION: '15m',
         JWT_REFRESH_EXPIRATION: '7d',
-        TOTP_ISSUER: 'Ndiipano',
+        TOTP_ISSUER: 'Ndipaano',
       };
       return config[key];
     }),

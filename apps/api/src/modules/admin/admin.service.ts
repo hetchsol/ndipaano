@@ -115,7 +115,7 @@ export class AdminService {
    * List all users with pagination, role filter, search by name/email.
    */
   async getUsers(query: UserQueryDto) {
-    const { role, search, isActive, page, limit } = query;
+    const { role, search, isActive, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
     const where: Prisma.UserWhereInput = {};

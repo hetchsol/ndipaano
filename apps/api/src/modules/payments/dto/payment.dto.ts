@@ -35,7 +35,7 @@ export class InitiatePaymentDto {
 
   @ApiPropertyOptional({
     description: 'Callback URL for payment provider redirect',
-    example: 'https://app.ndiipano.co.zm/payments/callback',
+    example: 'https://app.ndipaano.co.zm/payments/callback',
   })
   @IsOptional()
   @IsString()

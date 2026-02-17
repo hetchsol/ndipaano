@@ -202,7 +202,7 @@ export class CreateDataSubjectRequestDto {
 
   @ApiPropertyOptional({
     description: 'Description or details about the request',
-    example: 'I would like to receive a copy of all my personal data held by Ndiipano.',
+    example: 'I would like to receive a copy of all my personal data held by Ndipaano.',
   })
   @IsOptional()
   @IsString()

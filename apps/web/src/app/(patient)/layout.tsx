@@ -14,10 +14,10 @@ import {
 } from 'lucide-react';
 
 const patientNavItems: SidebarItem[] = [
-  { label: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Bookings', href: '/bookings', icon: CalendarDays },
-  { label: 'Medical Records', href: '/records', icon: FileText },
-  { label: 'Prescriptions', href: '/prescriptions', icon: Pill },
+  { label: 'Dashboard', href: '/patient/dashboard', icon: LayoutDashboard },
+  { label: 'Bookings', href: '/patient/bookings', icon: CalendarDays },
+  { label: 'Medical Records', href: '/patient/records', icon: FileText },
+  { label: 'Prescriptions', href: '/patient/prescriptions', icon: Pill },
   { label: 'Settings', href: '/consent', icon: Settings },
 ];
 

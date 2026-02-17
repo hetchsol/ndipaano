@@ -89,17 +89,17 @@ async function bootstrap() {
   // ---------------------------------------------------------------------------
   if (configService.get<string>('NODE_ENV') !== 'production') {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle('Ndiipano API')
+      .setTitle('Ndipaano API')
       .setDescription(
-        'Ndiipano Medical Home Care Platform API - ' +
+        'Ndipaano Medical Home Care Platform API - ' +
         'Zambian healthcare services connecting patients with certified practitioners. ' +
         'Compliant with Zambia Data Protection Act (DPA) 2021.',
       )
       .setVersion('1.0')
       .setContact(
-        'Ndiipano Engineering',
-        'https://ndiipano.co.zm',
-        'engineering@ndiipano.co.zm',
+        'Ndipaano Engineering',
+        'https://ndipaano.co.zm',
+        'engineering@ndipaano.co.zm',
       )
       .addBearerAuth(
         {
@@ -132,7 +132,7 @@ async function bootstrap() {
         tagsSorter: 'alpha',
         operationsSorter: 'alpha',
       },
-      customSiteTitle: 'Ndiipano API Documentation',
+      customSiteTitle: 'Ndipaano API Documentation',
     });
 
     logger.log('Swagger documentation available at /api/docs');
@@ -145,7 +145,7 @@ async function bootstrap() {
   const host = configService.get<string>('host', '0.0.0.0');
 
   await app.listen(port, host);
-  logger.log(`Ndiipano API is running on http://${host}:${port}`);
+  logger.log(`Ndipaano API is running on http://${host}:${port}`);
   logger.log(`Environment: ${configService.get<string>('NODE_ENV', 'development')}`);
 }
 

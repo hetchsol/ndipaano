@@ -2,10 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useAuth } from '../../../hooks/use-auth';
-import { Card, CardHeader, CardTitle, CardContent } from '../../../components/ui/card';
-import { Button } from '../../../components/ui/button';
-import { Badge } from '../../../components/ui/badge';
+import { useAuth } from '../../../../hooks/use-auth';
+import { Card, CardHeader, CardTitle, CardContent } from '../../../../components/ui/card';
+import { Button } from '../../../../components/ui/button';
+import { Badge } from '../../../../components/ui/badge';
 import {
   Table,
   TableHeader,
@@ -13,9 +13,9 @@ import {
   TableRow,
   TableHead,
   TableCell,
-} from '../../../components/ui/table';
-import { bookingsAPI, paymentsAPI } from '../../../lib/api';
-import { formatDate, formatCurrency, getStatusColor } from '../../../lib/utils';
+} from '../../../../components/ui/table';
+import { bookingsAPI, paymentsAPI } from '../../../../lib/api';
+import { formatDate, formatCurrency, getStatusColor } from '../../../../lib/utils';
 import { toast } from 'sonner';
 import {
   CalendarDays,
@@ -209,7 +209,7 @@ export default function PractitionerDashboard() {
               <Badge variant="warning" className="ml-2">{pendingRequests.length}</Badge>
             )}
           </CardTitle>
-          <Link href="/schedule">
+          <Link href="/practitioner/schedule">
             <Button variant="ghost" size="sm">
               View All <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
@@ -293,7 +293,7 @@ export default function PractitionerDashboard() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Today&apos;s Schedule</CardTitle>
-          <Link href="/schedule">
+          <Link href="/practitioner/schedule">
             <Button variant="ghost" size="sm">
               Full Schedule <ArrowRight className="ml-1 h-4 w-4" />
             </Button>

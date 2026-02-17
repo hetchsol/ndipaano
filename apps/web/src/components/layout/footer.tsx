@@ -13,7 +13,7 @@ export function Footer() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-700">
                 <Heart className="h-4 w-4 text-white" />
               </div>
-              <span className="text-lg font-bold text-primary-700">Ndiipano</span>
+              <span className="text-lg font-bold text-primary-700">Ndipaano</span>
             </div>
             <p className="mt-3 text-sm text-gray-500">
               Connecting Zambian patients with verified healthcare practitioners for
@@ -106,7 +106,7 @@ export function Footer() {
         <div className="mt-8 border-t border-gray-200 pt-8">
           <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
             <p className="text-xs text-gray-400">
-              &copy; {new Date().getFullYear()} Ndiipano Medical Home Care. All rights reserved.
+              &copy; {new Date().getFullYear()} Ndipaano Medical Home Care. All rights reserved.
             </p>
             <p className="text-xs text-gray-400">
               Compliant with the Zambia Data Protection Act, 2021
