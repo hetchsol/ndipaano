@@ -326,6 +326,32 @@ export class AuthService {
       };
     }
 
+    // Fetch full user details for the response
+    const fullUser = await this.prisma.user.findUnique({
+      where: { id: user.id },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        role: true,
+        isEmailVerified: true,
+        twoFactorEnabled: true,
+        createdAt: true,
+        practitionerProfile: {
+          select: {
+            practitionerType: true,
+            hpczRegistrationNumber: true,
+            hpczVerified: true,
+            ratingAvg: true,
+            ratingCount: true,
+            baseConsultationFee: true,
+          },
+        },
+      },
+    });
+
     const tokens = await this.generateTokens({
       id: user.id,
       email: user.email,
@@ -334,7 +360,7 @@ export class AuthService {
 
     return {
       ...tokens,
-      user: {
+      user: fullUser || {
         id: user.id,
         email: user.email,
         role: user.role,

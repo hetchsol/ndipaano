@@ -36,21 +36,27 @@ api.interceptors.response.use(
             const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
               refreshToken,
             });
-            const { token } = response.data.data;
-            localStorage.setItem('ndipaano_token', token);
+            const { accessToken } = response.data.data;
+            localStorage.setItem('ndipaano_token', accessToken);
+            // Update the cookie so middleware stays in sync
+            document.cookie = `ndipaano_token=${accessToken}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
             if (error.config && error.config.headers) {
-              error.config.headers.Authorization = `Bearer ${token}`;
+              error.config.headers.Authorization = `Bearer ${accessToken}`;
               return api(error.config);
             }
           } catch {
             localStorage.removeItem('ndipaano_token');
             localStorage.removeItem('ndipaano_refresh_token');
             localStorage.removeItem('ndipaano_user');
+            document.cookie = 'ndipaano_token=; path=/; max-age=0';
+            document.cookie = 'ndipaano_role=; path=/; max-age=0';
             window.location.href = '/login';
           }
         } else {
           localStorage.removeItem('ndipaano_token');
           localStorage.removeItem('ndipaano_user');
+          document.cookie = 'ndipaano_token=; path=/; max-age=0';
+          document.cookie = 'ndipaano_role=; path=/; max-age=0';
           window.location.href = '/login';
         }
       }
@@ -64,16 +70,27 @@ export const authAPI = {
   login: (data: { email: string; password: string; twoFactorCode?: string }) =>
     api.post('/auth/login', data),
 
-  register: (data: {
+  registerPatient: (data: {
     email: string;
     password: string;
     firstName: string;
     lastName: string;
     phone: string;
-    role: 'patient' | 'practitioner';
-    practitionerType?: string;
-    licenseNumber?: string;
-  }) => api.post('/auth/register', data),
+    dateOfBirth?: string;
+    gender?: string;
+  }) => api.post('/auth/register/patient', data),
+
+  registerPractitioner: (data: {
+    email: string;
+    password: string;
+    firstName: string;
+    lastName: string;
+    phone: string;
+    practitionerType: string;
+    hpczRegistrationNumber: string;
+    serviceRadiusKm?: number;
+    baseConsultationFee?: number;
+  }) => api.post('/auth/register/practitioner', data),
 
   refresh: (refreshToken: string) =>
     api.post('/auth/refresh', { refreshToken }),

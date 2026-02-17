@@ -24,6 +24,32 @@ export interface User {
   };
 }
 
+/**
+ * Maps the API role (uppercase Prisma enum) to the frontend role.
+ * API roles: ADMIN, SUPER_ADMIN, PATIENT, DOCTOR, NURSE, CLINICAL_OFFICER, PHYSIOTHERAPIST, PHARMACIST
+ * Frontend roles: admin, patient, practitioner
+ */
+function mapApiRole(apiRole: string): 'admin' | 'patient' | 'practitioner' {
+  const role = apiRole.toUpperCase();
+  if (role === 'ADMIN' || role === 'SUPER_ADMIN') return 'admin';
+  if (role === 'PATIENT') return 'patient';
+  return 'practitioner'; // DOCTOR, NURSE, CLINICAL_OFFICER, PHYSIOTHERAPIST, PHARMACIST
+}
+
+/**
+ * Set auth cookies so the Next.js middleware can read them (middleware runs
+ * on the edge and cannot access localStorage).
+ */
+function setAuthCookies(token: string, role: string) {
+  document.cookie = `ndipaano_token=${token}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+  document.cookie = `ndipaano_role=${role}; path=/; max-age=${60 * 60 * 24 * 7}; SameSite=Lax`;
+}
+
+function clearAuthCookies() {
+  document.cookie = 'ndipaano_token=; path=/; max-age=0';
+  document.cookie = 'ndipaano_role=; path=/; max-age=0';
+}
+
 interface AuthState {
   user: User | null;
   token: string | null;
@@ -59,11 +85,14 @@ export const useAuth = create<AuthState>((set, get) => ({
       if (token && userStr) {
         try {
           const user = JSON.parse(userStr);
+          // Ensure cookies are in sync with localStorage
+          setAuthCookies(token, user.role || 'patient');
           set({ user, token, isAuthenticated: true, isLoading: false });
         } catch {
           localStorage.removeItem('ndipaano_token');
           localStorage.removeItem('ndipaano_user');
           localStorage.removeItem('ndipaano_refresh_token');
+          clearAuthCookies();
           set({ isLoading: false });
         }
       } else {
@@ -74,30 +103,57 @@ export const useAuth = create<AuthState>((set, get) => ({
 
   login: async (email: string, password: string, twoFactorCode?: string) => {
     const response = await authAPI.login({ email, password, twoFactorCode });
-    const { user, token, refreshToken } = response.data.data;
+    const { user: apiUser, accessToken, refreshToken } = response.data.data;
 
-    localStorage.setItem('ndipaano_token', token);
+    // Map the API role to the frontend role
+    const mappedRole = mapApiRole(apiUser.role);
+    const user = { ...apiUser, role: mappedRole };
+
+    localStorage.setItem('ndipaano_token', accessToken);
     localStorage.setItem('ndipaano_refresh_token', refreshToken);
     localStorage.setItem('ndipaano_user', JSON.stringify(user));
+    setAuthCookies(accessToken, mappedRole);
 
-    set({ user, token, isAuthenticated: true, isLoading: false });
+    set({ user, token: accessToken, isAuthenticated: true, isLoading: false });
   },
 
   register: async (data) => {
-    const response = await authAPI.register(data);
-    const { user, token, refreshToken } = response.data.data;
+    const response = data.role === 'practitioner'
+      ? await authAPI.registerPractitioner({
+          email: data.email,
+          password: data.password,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phone: data.phone,
+          practitionerType: data.practitionerType || 'NURSE',
+          hpczRegistrationNumber: data.licenseNumber || '',
+        })
+      : await authAPI.registerPatient({
+          email: data.email,
+          password: data.password,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          phone: data.phone,
+        });
 
-    localStorage.setItem('ndipaano_token', token);
+    const { user: apiUser, accessToken, refreshToken } = response.data.data;
+
+    const mappedRole = mapApiRole(apiUser.role);
+    const user = { ...apiUser, role: mappedRole };
+
+    localStorage.setItem('ndipaano_token', accessToken);
     localStorage.setItem('ndipaano_refresh_token', refreshToken);
     localStorage.setItem('ndipaano_user', JSON.stringify(user));
+    setAuthCookies(accessToken, mappedRole);
 
-    set({ user, token, isAuthenticated: true, isLoading: false });
+    set({ user, token: accessToken, isAuthenticated: true, isLoading: false });
   },
 
   logout: () => {
     localStorage.removeItem('ndipaano_token');
     localStorage.removeItem('ndipaano_refresh_token');
     localStorage.removeItem('ndipaano_user');
+    clearAuthCookies();
     set({ user: null, token: null, isAuthenticated: false });
     window.location.href = '/login';
   },
@@ -110,7 +166,9 @@ export const useAuth = create<AuthState>((set, get) => ({
   refreshUser: async () => {
     try {
       const response = await usersAPI.getProfile();
-      const user = response.data.data;
+      const apiUser = response.data.data;
+      const mappedRole = mapApiRole(apiUser.role);
+      const user = { ...apiUser, role: mappedRole };
       localStorage.setItem('ndipaano_user', JSON.stringify(user));
       set({ user });
     } catch {
