@@ -1,0 +1,85 @@
+# Render Blueprint - Ndiipano Platform
+# https://render.com/docs/blueprint-spec
+
+services:
+  # NestJS API Server
+  - type: web
+    name: ndiipano-api
+    runtime: node
+    region: frankfurt
+    plan: starter
+    buildCommand: pnpm install && pnpm --filter @ndiipano/shared build && pnpm --filter api build
+    startCommand: pnpm --filter api start:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ndiipano-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: ndiipano-redis
+          type: redis
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: WEB_URL
+        fromService:
+          name: ndiipano-web
+          type: web
+          property: host
+      - key: S3_ENDPOINT
+        sync: false
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      - key: S3_BUCKET
+        value: ndiipano
+      - key: S3_REGION
+        value: eu-central-1
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: PAYSTACK_WEBHOOK_SECRET
+        sync: false
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: AT_API_KEY
+        sync: false
+    healthCheckPath: /api/health
+
+  # Next.js Web Portal
+  - type: web
+    name: ndiipano-web
+    runtime: node
+    region: frankfurt
+    plan: starter
+    buildCommand: pnpm install && pnpm --filter @ndiipano/shared build && pnpm --filter web build
+    startCommand: pnpm --filter web start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        fromService:
+          name: ndiipano-api
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+
+databases:
+  - name: ndiipano-db
+    plan: starter
+    databaseName: ndiipano
+    postgresMajorVersion: "16"
+    ipAllowList: []
+
+  - name: ndiipano-redis
+    plan: starter
+    type: redis
+    ipAllowList: []

@@ -1,0 +1,592 @@
+// =============================================================================
+// Ndiipano Medical Home Care Platform - Prisma Schema
+// Zambian healthcare platform with POPIA/DPA compliance
+// =============================================================================
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+// =============================================================================
+// Enums
+// =============================================================================
+
+enum UserRole {
+  PATIENT
+  NURSE
+  CLINICAL_OFFICER
+  DOCTOR
+  PHYSIOTHERAPIST
+  PHARMACIST
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum PractitionerType {
+  REGISTERED_NURSE
+  ENROLLED_NURSE
+  CLINICAL_OFFICER
+  GENERAL_PRACTITIONER
+  SPECIALIST_DOCTOR
+  PHYSIOTHERAPIST
+  PHARMACIST
+  MIDWIFE
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  PRACTITIONER_EN_ROUTE
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  DISPUTED
+}
+
+enum ServiceType {
+  GENERAL_CONSULTATION
+  NURSING_CARE
+  WOUND_DRESSING
+  INJECTION_ADMINISTRATION
+  IV_THERAPY
+  PHYSIOTHERAPY
+  MATERNAL_CARE
+  CHILD_WELLNESS
+  CHRONIC_DISEASE_MANAGEMENT
+  PALLIATIVE_CARE
+  POST_OPERATIVE_CARE
+  MENTAL_HEALTH
+  PHARMACY_DELIVERY
+  LAB_SAMPLE_COLLECTION
+  EMERGENCY_TRIAGE
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  DISPUTED
+}
+
+enum PaymentMethod {
+  MOBILE_MONEY_MTN
+  MOBILE_MONEY_AIRTEL
+  MOBILE_MONEY_ZAMTEL
+  VISA
+  MASTERCARD
+  BANK_TRANSFER
+  INSURANCE
+  CASH
+}
+
+enum ConsentType {
+  DATA_PROCESSING
+  MEDICAL_DATA_SHARING
+  LOCATION_TRACKING
+  MARKETING_COMMUNICATIONS
+  THIRD_PARTY_SHARING
+  INSURANCE_DATA_SHARING
+  RESEARCH_PARTICIPATION
+  TERMS_OF_SERVICE
+  PRIVACY_POLICY
+}
+
+enum DocumentType {
+  HPCZ_CERTIFICATE
+  ZAMRA_LICENSE
+  NATIONAL_ID
+  PRACTICING_LICENSE
+  DEGREE_CERTIFICATE
+  SPECIALIZATION_CERTIFICATE
+  INSURANCE_CERTIFICATE
+  POLICE_CLEARANCE
+  CV_RESUME
+  OTHER
+}
+
+enum NotificationChannel {
+  PUSH
+  SMS
+  EMAIL
+  IN_APP
+  WHATSAPP
+}
+
+enum DataRequestType {
+  ACCESS
+  RECTIFICATION
+  ERASURE
+  PORTABILITY
+  RESTRICTION
+  OBJECTION
+}
+
+// =============================================================================
+// Models
+// =============================================================================
+
+model User {
+  id                 String    @id @default(uuid()) @db.Uuid
+  email              String    @unique
+  phone              String    @unique
+  passwordHash       String
+  firstName          String
+  lastName           String
+  role               UserRole
+  languagePreference String    @default("en")
+  isEmailVerified    Boolean   @default(false)
+  isPhoneVerified    Boolean   @default(false)
+  isActive           Boolean   @default(true)
+  twoFactorEnabled   Boolean   @default(false)
+  twoFactorSecret    String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  patientProfile      PatientProfile?
+  practitionerProfile PractitionerProfile?
+  consentRecords      ConsentRecord[]
+  auditLogs           AuditLog[]
+  dataSubjectRequests DataSubjectRequest[]
+  notifications       Notification[]
+  emergencyContacts   EmergencyContact[]
+
+  // Booking relations (as patient)
+  patientBookings      Booking[]       @relation("PatientBookings")
+  // Booking relations (as practitioner)
+  practitionerBookings Booking[]       @relation("PractitionerBookings")
+  // Medical records as patient
+  patientRecords       MedicalRecord[] @relation("PatientRecords")
+  // Medical records as practitioner
+  practitionerRecords  MedicalRecord[] @relation("PractitionerRecords")
+  // Prescriptions as patient
+  patientPrescriptions Prescription[]  @relation("PatientPrescriptions")
+  // Prescriptions as practitioner
+  practitionerPrescriptions Prescription[] @relation("PractitionerPrescriptions")
+  // Payments as patient
+  patientPayments      Payment[]       @relation("PatientPayments")
+  // Payments as practitioner
+  practitionerPayments Payment[]       @relation("PractitionerPayments")
+  // Insurance claims
+  insuranceClaims      InsuranceClaim[]
+  // Reviews written by patient
+  patientReviews       Review[]        @relation("PatientReviews")
+  // Reviews received by practitioner
+  practitionerReviews  Review[]        @relation("PractitionerReviews")
+
+  @@index([email])
+  @@index([phone])
+  @@index([role])
+  @@map("users")
+}
+
+model PatientProfile {
+  id                    String    @id @default(uuid()) @db.Uuid
+  userId                String    @unique @db.Uuid
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateOfBirth           DateTime?
+  gender                Gender?
+  bloodType             String?
+  allergiesJson         Json?
+  emergencyContactName  String?
+  emergencyContactPhone String?
+  nhimaNumber           String?
+  insuranceProvider     String?
+  insurancePolicyNumber String?
+  address               String?
+  city                  String?
+  province              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  familyMembers FamilyMember[]
+
+  @@index([userId])
+  @@map("patient_profiles")
+}
+
+model PractitionerProfile {
+  id                     String           @id @default(uuid()) @db.Uuid
+  userId                 String           @unique @db.Uuid
+  user                   User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  practitionerType       PractitionerType
+  hpczRegistrationNumber String           @unique
+  hpczCertificateExpiry  DateTime?
+  hpczVerified           Boolean          @default(false)
+  zamraRegistration      String?
+  specializations        String[]
+  bio                    String?
+  serviceRadiusKm        Int              @default(25)
+  baseConsultationFee    Decimal?         @db.Decimal(10, 2)
+  isAvailable            Boolean          @default(false)
+  ratingAvg              Float            @default(0)
+  ratingCount            Int              @default(0)
+  latitude               Float?
+  longitude              Float?
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
+
+  documents PractitionerDocument[]
+
+  @@index([userId])
+  @@index([hpczRegistrationNumber])
+  @@index([practitionerType])
+  @@index([isAvailable])
+  @@map("practitioner_profiles")
+}
+
+model PractitionerDocument {
+  id              String       @id @default(uuid()) @db.Uuid
+  practitionerId  String       @db.Uuid
+  practitioner    PractitionerProfile @relation(fields: [practitionerId], references: [id], onDelete: Cascade)
+  documentType    DocumentType
+  fileName        String
+  fileUrl         String
+  fileSize        Int
+  mimeType        String
+  verified        Boolean      @default(false)
+  verifiedBy      String?      @db.Uuid
+  verifiedAt      DateTime?
+  expiryDate      DateTime?
+  rejectionReason String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([practitionerId])
+  @@index([documentType])
+  @@map("practitioner_documents")
+}
+
+model FamilyMember {
+  id           String         @id @default(uuid()) @db.Uuid
+  patientId    String         @db.Uuid
+  patient      PatientProfile @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  firstName    String
+  lastName     String
+  relationship String
+  dateOfBirth  DateTime?
+  gender       Gender?
+  consentGiven Boolean        @default(false)
+  createdAt    DateTime       @default(now())
+
+  @@index([patientId])
+  @@map("family_members")
+}
+
+model Booking {
+  id                String        @id @default(uuid()) @db.Uuid
+  patientId         String        @db.Uuid
+  patient           User          @relation("PatientBookings", fields: [patientId], references: [id])
+  practitionerId    String        @db.Uuid
+  practitioner      User          @relation("PractitionerBookings", fields: [practitionerId], references: [id])
+  serviceType       ServiceType
+  status            BookingStatus @default(PENDING)
+  scheduledAt       DateTime
+  startedAt         DateTime?
+  completedAt       DateTime?
+  cancelledAt       DateTime?
+  locationLat       Float?
+  locationLng       Float?
+  address           String?
+  city              String?
+  province          String?
+  notes             String?
+  cancellationReason String?
+  cancelledBy       String?       @db.Uuid
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  tracking       BookingTracking?
+  medicalRecords MedicalRecord[]
+  payment        Payment?
+  review         Review?
+  insuranceClaim InsuranceClaim?
+
+  @@index([patientId])
+  @@index([practitionerId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@index([patientId, practitionerId])
+  @@map("bookings")
+}
+
+model BookingTracking {
+  id                       String   @id @default(uuid()) @db.Uuid
+  bookingId                String   @unique @db.Uuid
+  booking                  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  practitionerLat          Float
+  practitionerLng          Float
+  estimatedArrivalMinutes  Int?
+  updatedAt                DateTime @updatedAt
+
+  @@index([bookingId])
+  @@map("booking_trackings")
+}
+
+model MedicalRecord {
+  id              String    @id @default(uuid()) @db.Uuid
+  patientId       String    @db.Uuid
+  patient         User      @relation("PatientRecords", fields: [patientId], references: [id])
+  practitionerId  String    @db.Uuid
+  practitioner    User      @relation("PractitionerRecords", fields: [practitionerId], references: [id])
+  bookingId       String?   @db.Uuid
+  booking         Booking?  @relation(fields: [bookingId], references: [id])
+  diagnosis       String?
+  treatmentNotes  String?
+  vitalsJson      Json?
+  encryptedData   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  prescriptions Prescription[]
+
+  @@index([patientId])
+  @@index([practitionerId])
+  @@index([bookingId])
+  @@map("medical_records")
+}
+
+model Prescription {
+  id                        String    @id @default(uuid()) @db.Uuid
+  medicalRecordId           String    @db.Uuid
+  medicalRecord             MedicalRecord @relation(fields: [medicalRecordId], references: [id], onDelete: Cascade)
+  patientId                 String    @db.Uuid
+  patient                   User      @relation("PatientPrescriptions", fields: [patientId], references: [id])
+  practitionerId            String    @db.Uuid
+  practitioner              User      @relation("PractitionerPrescriptions", fields: [practitionerId], references: [id])
+  medicationName            String
+  dosage                    String
+  frequency                 String
+  duration                  String?
+  quantity                  Int?
+  isControlledSubstance     Boolean   @default(false)
+  controlledSubstanceSchedule String?
+  dispensed                 Boolean   @default(false)
+  pharmacyId                String?   @db.Uuid
+  pharmacy                  Pharmacy? @relation(fields: [pharmacyId], references: [id])
+  dispensedAt               DateTime?
+  notes                     String?
+  createdAt                 DateTime  @default(now())
+
+  @@index([medicalRecordId])
+  @@index([patientId])
+  @@index([practitionerId])
+  @@index([pharmacyId])
+  @@map("prescriptions")
+}
+
+model ConsentRecord {
+  id          String      @id @default(uuid()) @db.Uuid
+  userId      String      @db.Uuid
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  consentType ConsentType
+  granted     Boolean
+  grantedAt   DateTime?
+  revokedAt   DateTime?
+  ipAddress   String?
+  userAgent   String?
+  version     String      @default("1.0")
+  createdAt   DateTime    @default(now())
+
+  @@index([userId])
+  @@index([consentType])
+  @@map("consent_records")
+}
+
+model Payment {
+  id                String        @id @default(uuid()) @db.Uuid
+  bookingId         String        @unique @db.Uuid
+  booking           Booking       @relation(fields: [bookingId], references: [id])
+  patientId         String        @db.Uuid
+  patient           User          @relation("PatientPayments", fields: [patientId], references: [id])
+  practitionerId    String        @db.Uuid
+  practitioner      User          @relation("PractitionerPayments", fields: [practitionerId], references: [id])
+  amount            Decimal       @db.Decimal(10, 2)
+  currency          String        @default("ZMW")
+  paymentMethod     PaymentMethod
+  paymentProvider   String?
+  providerReference String?
+  status            PaymentStatus @default(PENDING)
+  commissionAmount  Decimal?      @db.Decimal(10, 2)
+  practitionerPayout Decimal?     @db.Decimal(10, 2)
+  paidOutAt         DateTime?
+  metadata          Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([bookingId])
+  @@index([patientId])
+  @@index([practitionerId])
+  @@index([status])
+  @@map("payments")
+}
+
+model InsuranceClaim {
+  id                String   @id @default(uuid()) @db.Uuid
+  bookingId         String   @unique @db.Uuid
+  booking           Booking  @relation(fields: [bookingId], references: [id])
+  patientId         String   @db.Uuid
+  patient           User     @relation(fields: [patientId], references: [id])
+  insuranceProvider String
+  claimReference    String?
+  amount            Decimal  @db.Decimal(10, 2)
+  status            String   @default("SUBMITTED")
+  submittedAt       DateTime @default(now())
+  resolvedAt        DateTime?
+  notes             String?
+  createdAt         DateTime @default(now())
+
+  @@index([bookingId])
+  @@index([patientId])
+  @@index([status])
+  @@map("insurance_claims")
+}
+
+model AuditLog {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String?  @db.Uuid
+  user         User?    @relation(fields: [userId], references: [id])
+  action       String
+  resourceType String
+  resourceId   String?
+  details      Json?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  // No updatedAt - audit logs are immutable
+
+  @@index([userId])
+  @@index([action])
+  @@index([resourceType])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model DataSubjectRequest {
+  id          String          @id @default(uuid()) @db.Uuid
+  userId      String          @db.Uuid
+  user        User            @relation(fields: [userId], references: [id])
+  requestType DataRequestType
+  status      String          @default("PENDING")
+  description String?
+  requestedAt DateTime        @default(now())
+  completedAt DateTime?
+  processedBy String?         @db.Uuid
+  response    String?
+  createdAt   DateTime        @default(now())
+
+  @@index([userId])
+  @@index([status])
+  @@index([requestType])
+  @@map("data_subject_requests")
+}
+
+model BreachNotification {
+  id                    String   @id @default(uuid()) @db.Uuid
+  detectedAt            DateTime
+  reportedAt            DateTime?
+  commissionerNotified  Boolean  @default(false)
+  description           String
+  affectedUsersCount    Int      @default(0)
+  remediationSteps      String?
+  severity              String
+  reportedBy            String?  @db.Uuid
+  createdAt             DateTime @default(now())
+
+  @@index([severity])
+  @@index([detectedAt])
+  @@map("breach_notifications")
+}
+
+model Review {
+  id              String   @id @default(uuid()) @db.Uuid
+  bookingId       String   @unique @db.Uuid
+  booking         Booking  @relation(fields: [bookingId], references: [id])
+  patientId       String   @db.Uuid
+  patient         User     @relation("PatientReviews", fields: [patientId], references: [id])
+  practitionerId  String   @db.Uuid
+  practitioner    User     @relation("PractitionerReviews", fields: [practitionerId], references: [id])
+  rating          Int
+  comment         String?
+  isPublic        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  @@index([patientId])
+  @@index([practitionerId])
+  @@index([rating])
+  @@map("reviews")
+}
+
+model Notification {
+  id        String              @id @default(uuid()) @db.Uuid
+  userId    String              @db.Uuid
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  body      String
+  read      Boolean             @default(false)
+  channel   NotificationChannel
+  metadata  Json?
+  sentAt    DateTime?
+  readAt    DateTime?
+  createdAt DateTime            @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@index([channel])
+  @@map("notifications")
+}
+
+model Pharmacy {
+  id                String   @id @default(uuid()) @db.Uuid
+  name              String
+  zamraRegistration String   @unique
+  address           String
+  city              String
+  province          String
+  latitude          Float?
+  longitude         Float?
+  phone             String
+  email             String?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  prescriptions Prescription[]
+
+  @@index([city])
+  @@index([isActive])
+  @@map("pharmacies")
+}
+
+model EmergencyContact {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name         String
+  phone        String
+  relationship String
+  isPrimary    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@map("emergency_contacts")
+}
