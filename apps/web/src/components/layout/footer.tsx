@@ -13,7 +13,7 @@ export function Footer() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-700">
                 <Heart className="h-4 w-4 text-white" />
               </div>
-              <span className="text-lg font-bold text-primary-700">Ndipaano</span>
+              <span className="text-lg font-bold text-primary-700">Ndipaano!</span>
             </div>
             <p className="mt-3 text-sm text-gray-500">
               Connecting Zambian patients with verified healthcare practitioners for
@@ -38,6 +38,11 @@ export function Footer() {
               <li>
                 <Link href="/consent" className="text-sm text-gray-500 hover:text-primary-700">
                   Manage Consent
+                </Link>
+              </li>
+              <li>
+                <Link href="/login" className="text-sm text-gray-500 hover:text-primary-700">
+                  Service Rates
                 </Link>
               </li>
               <li>
@@ -95,7 +100,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-sm text-gray-500 hover:text-primary-700">
+                <Link href="/login" className="text-sm text-gray-500 hover:text-primary-700">
                   Contact Support
                 </Link>
               </li>

@@ -20,6 +20,7 @@ import {
   Users,
   MapPin,
   Heart,
+  ChevronRight,
 } from 'lucide-react';
 
 const features = [
@@ -28,36 +29,42 @@ const features = [
     title: 'Home Visits',
     description:
       'Qualified practitioners visit you at home, providing personalized medical care in the comfort of your residence.',
+    href: '/services',
   },
   {
     icon: Video,
     title: 'Virtual Consultations',
     description:
       'Connect with healthcare providers through secure video calls for consultations, follow-ups, and medical advice.',
+    href: '/search',
   },
   {
     icon: ShieldCheck,
     title: 'Verified Practitioners',
     description:
       'Every practitioner is thoroughly verified with HPCZ credentials, ensuring you receive care from qualified professionals.',
+    href: '/search',
   },
   {
     icon: FileText,
     title: 'Secure Records',
     description:
       'Your medical records are encrypted and stored securely, accessible only with your explicit consent under DPA compliance.',
+    href: '/login',
   },
   {
     icon: Phone,
     title: 'Emergency Support',
     description:
       'Access emergency medical support with priority booking and direct connections to nearby emergency services.',
+    href: '/login',
   },
   {
     icon: CreditCard,
     title: 'Insurance Integration',
     description:
       'Seamless integration with major Zambian insurance providers and support for mobile money payments.',
+    href: '/login',
   },
 ];
 
@@ -181,12 +188,16 @@ export default function LandingPage() {
 
           <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {features.map((feature) => (
-              <div
+              <Link
                 key={feature.title}
-                className="group rounded-xl border border-gray-200 bg-white p-6 shadow-card transition-all hover:shadow-card-hover hover:border-primary-200"
+                href={feature.href}
+                className="group cursor-pointer rounded-xl border border-gray-200 bg-white p-6 shadow-card transition-all hover:shadow-card-hover hover:border-primary-200"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-50 text-primary-700 group-hover:bg-primary-700 group-hover:text-white transition-colors">
-                  <feature.icon className="h-6 w-6" />
+                <div className="flex items-center justify-between">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-50 text-primary-700 group-hover:bg-primary-700 group-hover:text-white transition-colors">
+                    <feature.icon className="h-6 w-6" />
+                  </div>
+                  <ChevronRight className="h-5 w-5 text-gray-300 group-hover:text-primary-700 transition-colors" />
                 </div>
                 <h3 className="mt-4 text-lg font-semibold text-gray-900">
                   {feature.title}
@@ -194,7 +205,7 @@ export default function LandingPage() {
                 <p className="mt-2 text-sm text-gray-500 leading-relaxed">
                   {feature.description}
                 </p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>

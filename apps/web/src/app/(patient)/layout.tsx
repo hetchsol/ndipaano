@@ -9,6 +9,7 @@ import {
   CalendarDays,
   FileText,
   Pill,
+  CreditCard,
   Settings,
   Menu,
 } from 'lucide-react';
@@ -18,6 +19,7 @@ const patientNavItems: SidebarItem[] = [
   { label: 'Bookings', href: '/patient/bookings', icon: CalendarDays },
   { label: 'Medical Records', href: '/patient/records', icon: FileText },
   { label: 'Prescriptions', href: '/patient/prescriptions', icon: Pill },
+  { label: 'Rates', href: '/patient/rates', icon: CreditCard },
   { label: 'Settings', href: '/consent', icon: Settings },
 ];
 

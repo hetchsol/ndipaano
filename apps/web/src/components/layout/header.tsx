@@ -15,6 +15,7 @@ import {
   User,
   Settings,
   Heart,
+  CreditCard,
 } from 'lucide-react';
 
 export function Header() {
@@ -122,6 +123,14 @@ export function Header() {
                           <Settings className="h-4 w-4" />
                           Settings
                         </Link>
+                        <Link
+                          href="/patient/rates"
+                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          onClick={() => setUserMenuOpen(false)}
+                        >
+                          <CreditCard className="h-4 w-4" />
+                          Rates
+                        </Link>
                         <button
                           onClick={() => {
                             setUserMenuOpen(false);
@@ -187,6 +196,13 @@ export function Header() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Dashboard
+                </Link>
+                <Link
+                  href="/patient/rates"
+                  className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Rates
                 </Link>
                 <button
                   onClick={() => {
