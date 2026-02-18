@@ -80,6 +80,8 @@ export const authAPI = {
     gender: string;
     nationality: string;
     nrc?: string;
+    consentDataProcessing: boolean;
+    consentTerms: boolean;
   }) => api.post('/auth/register/patient', data),
 
   registerPractitioner: (data: {

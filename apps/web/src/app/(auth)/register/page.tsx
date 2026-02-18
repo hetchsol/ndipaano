@@ -158,6 +158,8 @@ export default function RegisterPage() {
         dateOfBirth: data.dateOfBirth,
         nationality: data.nationality,
         nrc: data.nrc || undefined,
+        consentDataProcessing: data.consentDataProcessing,
+        consentTerms: data.consentTerms,
       });
       toast.success('Account created successfully! Welcome to Ndipaano!.');
       if (result?.memberId) {

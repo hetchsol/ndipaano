@@ -69,6 +69,8 @@ interface AuthState {
     dateOfBirth?: string;
     nationality?: string;
     nrc?: string;
+    consentDataProcessing?: boolean;
+    consentTerms?: boolean;
   }) => Promise<{ memberId?: string }>;
   logout: () => void;
   setUser: (user: User) => void;
@@ -142,6 +144,8 @@ export const useAuth = create<AuthState>((set, get) => ({
           gender: data.gender || '',
           nationality: data.nationality || '',
           nrc: data.nrc || undefined,
+          consentDataProcessing: data.consentDataProcessing ?? true,
+          consentTerms: data.consentTerms ?? true,
         });
 
     const { user: apiUser, accessToken, refreshToken } = response.data.data;
