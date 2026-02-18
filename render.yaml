@@ -26,6 +26,8 @@ services:
         generateValue: true
       - key: ENCRYPTION_KEY
         generateValue: true
+      - key: CORS_ORIGINS
+        value: https://ndipaano-web.onrender.com,http://localhost:3000
       - key: FRONTEND_URL
         sync: false
       - key: S3_ENDPOINT
