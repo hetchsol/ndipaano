@@ -69,6 +69,58 @@ export class UpdatePractitionerProfileDto {
   @MinLength(2)
   @MaxLength(10)
   languagePreference?: string;
+
+  @ApiPropertyOptional({
+    description: 'Operating center / clinic name',
+    example: 'Lusaka Medical Centre',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  operatingCenterName?: string;
+
+  @ApiPropertyOptional({
+    description: 'Operating center street address',
+    example: '123 Cairo Road',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  operatingCenterAddress?: string;
+
+  @ApiPropertyOptional({
+    description: 'Operating center city',
+    example: 'Lusaka',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  operatingCenterCity?: string;
+
+  @ApiPropertyOptional({
+    description: 'Operating center phone number',
+    example: '+260211123456',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  operatingCenterPhone?: string;
+
+  @ApiPropertyOptional({
+    description: 'Whether the practitioner offers home visits',
+    example: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  offersHomeVisits?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Whether the practitioner offers clinic visits',
+    example: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  offersClinicVisits?: boolean;
 }
 
 export class UploadDocumentDto {
@@ -225,6 +277,24 @@ export class SearchPractitionersDto {
   @IsBoolean()
   @Type(() => Boolean)
   hpczVerified?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Filter practitioners who offer home visits',
+    example: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  offersHomeVisits?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Filter practitioners who offer clinic visits',
+    example: true,
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  offersClinicVisits?: boolean;
 
   @ApiPropertyOptional({
     description: 'Page number (1-based)',

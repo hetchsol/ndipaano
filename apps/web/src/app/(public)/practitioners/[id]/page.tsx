@@ -7,6 +7,7 @@ import { practitionersAPI } from '../../../../lib/api';
 import { formatCurrency, formatDate } from '../../../../lib/utils';
 import { Header } from '../../../../components/layout/header';
 import { Footer } from '../../../../components/layout/footer';
+import { EmergencyCallBanner } from '../../../../components/emergency-call-banner';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../../components/ui/card';
 import { Button } from '../../../../components/ui/button';
 import { Badge } from '../../../../components/ui/badge';
@@ -20,22 +21,41 @@ import {
   Calendar,
   Shield,
   MessageCircle,
+  Phone,
+  Mail,
+  Building2,
+  Home,
 } from 'lucide-react';
 
 interface PractitionerProfile {
   id: string;
-  firstName: string;
-  lastName: string;
-  type: string;
+  userId: string;
+  practitionerType: string;
+  hpczVerified: boolean;
+  specializations: string[];
   bio?: string;
-  rating: number;
-  totalReviews: number;
-  consultationFee: number;
+  serviceRadiusKm: number;
+  baseConsultationFee: number | string | null;
   isAvailable: boolean;
-  avatar?: string;
-  location: string;
-  specializations?: string[];
-  verificationStatus: string;
+  ratingAvg: number;
+  ratingCount: number;
+  latitude?: number;
+  longitude?: number;
+  operatingCenterName?: string;
+  operatingCenterAddress?: string;
+  operatingCenterCity?: string;
+  operatingCenterPhone?: string;
+  offersHomeVisits: boolean;
+  offersClinicVisits: boolean;
+  user: {
+    id: string;
+    email?: string;
+    phone: string;
+    firstName: string;
+    lastName: string;
+    languagePreference: string;
+    isActive: boolean;
+  };
   reviews: Array<{
     id: string;
     patient: { firstName: string; lastName: string };
@@ -50,6 +70,22 @@ interface PractitionerProfile {
     2: number;
     1: number;
   };
+}
+
+function getPractitionerDisplayName(profile: PractitionerProfile): string {
+  const type = profile.practitionerType;
+  const prefix =
+    type === 'GENERAL_PRACTITIONER' || type === 'SPECIALIST_DOCTOR'
+      ? 'Dr. '
+      : '';
+  return `${prefix}${profile.user.firstName} ${profile.user.lastName}`;
+}
+
+function formatPractitionerType(type: string): string {
+  return type
+    .split('_')
+    .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
+    .join(' ');
 }
 
 export default function PractitionerProfilePage() {
@@ -71,7 +107,7 @@ export default function PractitionerProfilePage() {
           const profile = profileRes.value.data.data;
           let reviews: PractitionerProfile['reviews'] = [];
           if (reviewsRes.status === 'fulfilled') {
-            reviews = reviewsRes.value.data.data?.reviews || [];
+            reviews = reviewsRes.value.data.data?.data || reviewsRes.value.data.data?.reviews || [];
           }
           setPractitioner({ ...profile, reviews });
         }
@@ -131,6 +167,9 @@ export default function PractitionerProfilePage() {
     ));
   };
 
+  const displayName = getPractitionerDisplayName(practitioner);
+  const fee = practitioner.baseConsultationFee;
+
   // Calculate rating breakdown from reviews if not provided by API
   const ratingBreakdown = practitioner.ratingBreakdown || {
     5: practitioner.reviews.filter((r) => r.rating === 5).length,
@@ -164,19 +203,19 @@ export default function PractitionerProfilePage() {
                 </div>
                 <div className="text-center sm:text-left">
                   <h1 className="text-2xl font-bold text-white">
-                    Dr. {practitioner.firstName} {practitioner.lastName}
+                    {displayName}
                   </h1>
-                  <p className="text-green-100 capitalize">
-                    {practitioner.type.replace('_', ' ')}
+                  <p className="text-green-100">
+                    {formatPractitionerType(practitioner.practitionerType)}
                   </p>
                   <div className="mt-2 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
                     <div className="flex items-center gap-1">
-                      {renderStars(practitioner.rating)}
+                      {renderStars(practitioner.ratingAvg)}
                       <span className="ml-1 text-sm text-white">
-                        {practitioner.rating.toFixed(1)} ({practitioner.totalReviews} reviews)
+                        {practitioner.ratingAvg.toFixed(1)} ({practitioner.ratingCount} reviews)
                       </span>
                     </div>
-                    {practitioner.verificationStatus === 'verified' && (
+                    {practitioner.hpczVerified && (
                       <Badge className="bg-white/20 text-white">
                         <Shield className="mr-1 h-3 w-3" />
                         HPCZ Verified
@@ -186,7 +225,7 @@ export default function PractitionerProfilePage() {
                 </div>
                 <div className="sm:ml-auto text-center sm:text-right">
                   <p className="text-2xl font-bold text-white">
-                    {formatCurrency(practitioner.consultationFee)}
+                    {fee ? formatCurrency(Number(fee)) : 'N/A'}
                   </p>
                   <p className="text-xs text-green-200">per consultation</p>
                 </div>
@@ -196,7 +235,7 @@ export default function PractitionerProfilePage() {
               <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                 <span className="flex items-center gap-1">
                   <MapPin className="h-4 w-4 text-gray-400" />
-                  {practitioner.location || 'Lusaka, Zambia'}
+                  {practitioner.operatingCenterCity || 'Lusaka'}, Zambia
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="h-4 w-4 text-gray-400" />
@@ -251,6 +290,59 @@ export default function PractitionerProfilePage() {
                 </Card>
               )}
 
+              {/* Service Availability */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Service Availability</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div
+                      className={`rounded-lg border p-4 ${
+                        practitioner.offersHomeVisits
+                          ? 'border-green-200 bg-green-50'
+                          : 'border-gray-200 bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Home
+                          className={`h-5 w-5 ${
+                            practitioner.offersHomeVisits ? 'text-green-600' : 'text-gray-400'
+                          }`}
+                        />
+                        <span className="font-medium text-gray-900">Home Visits</span>
+                      </div>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {practitioner.offersHomeVisits
+                          ? 'This practitioner visits patients at home'
+                          : 'Home visits not available'}
+                      </p>
+                    </div>
+                    <div
+                      className={`rounded-lg border p-4 ${
+                        practitioner.offersClinicVisits
+                          ? 'border-blue-200 bg-blue-50'
+                          : 'border-gray-200 bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <Building2
+                          className={`h-5 w-5 ${
+                            practitioner.offersClinicVisits ? 'text-blue-600' : 'text-gray-400'
+                          }`}
+                        />
+                        <span className="font-medium text-gray-900">Clinic Visits</span>
+                      </div>
+                      <p className="mt-1 text-sm text-gray-500">
+                        {practitioner.offersClinicVisits
+                          ? 'Patients can visit at the clinic'
+                          : 'Clinic visits not available'}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               {/* Reviews Section */}
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
@@ -258,10 +350,10 @@ export default function PractitionerProfilePage() {
                   <div className="flex items-center gap-1">
                     <Star className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                     <span className="text-lg font-bold text-gray-900">
-                      {practitioner.rating.toFixed(1)}
+                      {practitioner.ratingAvg.toFixed(1)}
                     </span>
                     <span className="text-sm text-gray-500">
-                      ({practitioner.totalReviews} reviews)
+                      ({practitioner.ratingCount} reviews)
                     </span>
                   </div>
                 </CardHeader>
@@ -335,7 +427,7 @@ export default function PractitionerProfilePage() {
                   <Calendar className="mx-auto h-8 w-8 text-green-700" />
                   <h3 className="mt-2 font-semibold text-green-900">Ready to Book?</h3>
                   <p className="mt-1 text-sm text-green-700">
-                    Schedule a consultation with Dr. {practitioner.firstName}
+                    Schedule a consultation with {practitioner.user.firstName}
                   </p>
                   <Link href="/search">
                     <Button className="mt-4 w-full">
@@ -351,15 +443,15 @@ export default function PractitionerProfilePage() {
                   <div className="flex items-center gap-3">
                     <Shield
                       className={`h-6 w-6 ${
-                        practitioner.verificationStatus === 'verified'
+                        practitioner.hpczVerified
                           ? 'text-green-600'
                           : 'text-gray-400'
                       }`}
                     />
                     <div>
                       <p className="font-medium text-gray-900">Verification</p>
-                      <p className="text-sm text-gray-500 capitalize">
-                        {practitioner.verificationStatus === 'verified'
+                      <p className="text-sm text-gray-500">
+                        {practitioner.hpczVerified
                           ? 'HPCZ Verified Practitioner'
                           : 'Verification pending'}
                       </p>
@@ -368,22 +460,67 @@ export default function PractitionerProfilePage() {
                 </CardContent>
               </Card>
 
-              {/* Contact */}
+              {/* Contact Card */}
               <Card>
                 <CardHeader>
                   <CardTitle>Contact</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-xs text-gray-400 mb-3">
-                    Contact details are shared after booking confirmation for patient privacy.
-                  </p>
-                  <Link href="/search">
-                    <Button variant="outline" className="w-full">
-                      Book to Contact
-                    </Button>
-                  </Link>
+                <CardContent className="space-y-3">
+                  {practitioner.user.phone && (
+                    <a
+                      href={`tel:${practitioner.user.phone}`}
+                      className="flex items-center gap-2 text-sm text-gray-700 hover:text-green-700"
+                    >
+                      <Phone className="h-4 w-4 text-gray-400" />
+                      {practitioner.user.phone}
+                    </a>
+                  )}
+                  {practitioner.user.email && (
+                    <a
+                      href={`mailto:${practitioner.user.email}`}
+                      className="flex items-center gap-2 text-sm text-gray-700 hover:text-green-700 break-all"
+                    >
+                      <Mail className="h-4 w-4 flex-shrink-0 text-gray-400" />
+                      {practitioner.user.email}
+                    </a>
+                  )}
                 </CardContent>
               </Card>
+
+              {/* Operating Center */}
+              {practitioner.offersClinicVisits && practitioner.operatingCenterName && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Operating Center</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div className="flex items-start gap-2">
+                      <Building2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
+                      <div className="text-sm text-gray-700">
+                        <p className="font-medium">{practitioner.operatingCenterName}</p>
+                        {practitioner.operatingCenterAddress && (
+                          <p>{practitioner.operatingCenterAddress}</p>
+                        )}
+                        {practitioner.operatingCenterCity && (
+                          <p>{practitioner.operatingCenterCity}</p>
+                        )}
+                      </div>
+                    </div>
+                    {practitioner.operatingCenterPhone && (
+                      <a
+                        href={`tel:${practitioner.operatingCenterPhone}`}
+                        className="flex items-center gap-2 text-sm text-gray-700 hover:text-green-700"
+                      >
+                        <Phone className="h-4 w-4 text-gray-400" />
+                        {practitioner.operatingCenterPhone}
+                      </a>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Emergency Call Banner */}
+              <EmergencyCallBanner />
             </div>
           </div>
         </div>

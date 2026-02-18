@@ -243,6 +243,12 @@ model PractitionerProfile {
   ratingCount            Int              @default(0)
   latitude               Float?
   longitude              Float?
+  operatingCenterName    String?
+  operatingCenterAddress String?
+  operatingCenterCity    String?
+  operatingCenterPhone   String?
+  offersHomeVisits       Boolean          @default(true)
+  offersClinicVisits     Boolean          @default(false)
   createdAt              DateTime         @default(now())
   updatedAt              DateTime         @updatedAt
 

@@ -29,6 +29,8 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
+  Home,
+  Building2,
 } from 'lucide-react';
 
 interface DocumentItem {
@@ -55,6 +57,14 @@ export default function PractitionerProfilePage() {
     user?.practitionerProfile?.consultationFee?.toString() || ''
   );
 
+  // Operating center & visit modes
+  const [offersHomeVisits, setOffersHomeVisits] = useState(true);
+  const [offersClinicVisits, setOffersClinicVisits] = useState(false);
+  const [operatingCenterName, setOperatingCenterName] = useState('');
+  const [operatingCenterAddress, setOperatingCenterAddress] = useState('');
+  const [operatingCenterCity, setOperatingCenterCity] = useState('');
+  const [operatingCenterPhone, setOperatingCenterPhone] = useState('');
+
   // Document upload
   const [docType, setDocType] = useState('hpcz_license');
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
@@ -68,6 +78,12 @@ export default function PractitionerProfilePage() {
       formData.append('serviceRadius', serviceRadius);
       formData.append('consultationFee', consultationFee);
       formData.append('isAvailable', isAvailable.toString());
+      formData.append('offersHomeVisits', offersHomeVisits.toString());
+      formData.append('offersClinicVisits', offersClinicVisits.toString());
+      formData.append('operatingCenterName', operatingCenterName);
+      formData.append('operatingCenterAddress', operatingCenterAddress);
+      formData.append('operatingCenterCity', operatingCenterCity);
+      formData.append('operatingCenterPhone', operatingCenterPhone);
 
       await practitionersAPI.updateProfile(formData);
       toast.success('Profile updated successfully.');
@@ -292,6 +308,71 @@ export default function PractitionerProfilePage() {
                 onChange={(e) => setConsultationFee(e.target.value)}
                 placeholder="Enter your fee in ZMW"
               />
+
+              {/* Operating Center & Visit Types */}
+              <div className="border-t border-gray-200 pt-5">
+                <h4 className="mb-4 text-sm font-semibold text-gray-900">
+                  Operating Center & Visit Types
+                </h4>
+
+                {/* Visit Mode Toggles */}
+                <div className="mb-4 flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setOffersHomeVisits(!offersHomeVisits)}
+                    className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
+                      offersHomeVisits
+                        ? 'border-green-300 bg-green-50 text-green-700'
+                        : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Home className="h-4 w-4" />
+                    I offer home visits
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setOffersClinicVisits(!offersClinicVisits)}
+                    className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors ${
+                      offersClinicVisits
+                        ? 'border-blue-300 bg-blue-50 text-blue-700'
+                        : 'border-gray-200 bg-white text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    <Building2 className="h-4 w-4" />
+                    Patients can visit my clinic
+                  </button>
+                </div>
+
+                {/* Clinic Details (shown when clinic visits enabled) */}
+                {offersClinicVisits && (
+                  <div className="space-y-4 rounded-lg border border-blue-100 bg-blue-50/30 p-4">
+                    <Input
+                      label="Clinic / Center Name"
+                      value={operatingCenterName}
+                      onChange={(e) => setOperatingCenterName(e.target.value)}
+                      placeholder="e.g. Lusaka Medical Centre"
+                    />
+                    <Input
+                      label="Address"
+                      value={operatingCenterAddress}
+                      onChange={(e) => setOperatingCenterAddress(e.target.value)}
+                      placeholder="e.g. 123 Cairo Road"
+                    />
+                    <Input
+                      label="City"
+                      value={operatingCenterCity}
+                      onChange={(e) => setOperatingCenterCity(e.target.value)}
+                      placeholder="e.g. Lusaka"
+                    />
+                    <Input
+                      label="Clinic Phone"
+                      value={operatingCenterPhone}
+                      onChange={(e) => setOperatingCenterPhone(e.target.value)}
+                      placeholder="e.g. +260211123456"
+                    />
+                  </div>
+                )}
+              </div>
             </CardContent>
             <CardFooter>
               <Button onClick={handleSaveProfile} isLoading={isSaving}>

@@ -7,6 +7,7 @@ import { practitionersAPI } from '../../../lib/api';
 import { formatCurrency } from '../../../lib/utils';
 import { Header } from '../../../components/layout/header';
 import { Footer } from '../../../components/layout/footer';
+import { EmergencyCallBanner } from '../../../components/emergency-call-banner';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
@@ -19,35 +20,85 @@ import {
   User,
   Stethoscope,
   CalendarPlus,
+  Phone,
+  Mail,
+  Building2,
+  Home,
 } from 'lucide-react';
 
 interface Practitioner {
   id: string;
-  firstName: string;
-  lastName: string;
-  type: string;
-  specializations?: string[];
-  rating: number;
-  totalReviews: number;
-  consultationFee: number;
+  userId: string;
+  practitionerType: string;
+  hpczVerified: boolean;
+  specializations: string[];
+  bio?: string;
+  serviceRadiusKm: number;
+  baseConsultationFee: number | string | null;
   isAvailable: boolean;
-  avatar?: string;
-  location: string;
-  distance?: number;
+  ratingAvg: number;
+  ratingCount: number;
+  latitude?: number;
+  longitude?: number;
+  operatingCenterName?: string;
+  operatingCenterAddress?: string;
+  operatingCenterCity?: string;
+  operatingCenterPhone?: string;
+  offersHomeVisits: boolean;
+  offersClinicVisits: boolean;
+  distanceKm?: number;
+  user: {
+    id: string;
+    email?: string;
+    phone: string;
+    firstName: string;
+    lastName: string;
+    languagePreference: string;
+  };
+  // raw SQL flattens user fields
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
 }
 
 const practitionerTypes = [
   { value: '', label: 'All Types' },
-  { value: 'doctor', label: 'Doctor' },
-  { value: 'specialist', label: 'Specialist' },
-  { value: 'nurse', label: 'Nurse' },
-  { value: 'midwife', label: 'Midwife' },
-  { value: 'physiotherapist', label: 'Physiotherapist' },
-  { value: 'pharmacist', label: 'Pharmacist' },
-  { value: 'clinical_officer', label: 'Clinical Officer' },
-  { value: 'counselor', label: 'Mental Health Counselor' },
-  { value: 'dentist', label: 'Dentist' },
+  { value: 'REGISTERED_NURSE', label: 'Registered Nurse' },
+  { value: 'ENROLLED_NURSE', label: 'Enrolled Nurse' },
+  { value: 'CLINICAL_OFFICER', label: 'Clinical Officer' },
+  { value: 'GENERAL_PRACTITIONER', label: 'General Practitioner' },
+  { value: 'SPECIALIST_DOCTOR', label: 'Specialist Doctor' },
+  { value: 'PHYSIOTHERAPIST', label: 'Physiotherapist' },
+  { value: 'PHARMACIST', label: 'Pharmacist' },
+  { value: 'MIDWIFE', label: 'Midwife' },
 ];
+
+function getPractitionerName(p: Practitioner): string {
+  const firstName = p.user?.firstName || p.firstName || '';
+  const lastName = p.user?.lastName || p.lastName || '';
+  const type = p.practitionerType;
+  const prefix =
+    type === 'GENERAL_PRACTITIONER' || type === 'SPECIALIST_DOCTOR'
+      ? 'Dr. '
+      : '';
+  return `${prefix}${firstName} ${lastName}`;
+}
+
+function getPractitionerPhone(p: Practitioner): string | undefined {
+  return p.user?.phone || p.phone;
+}
+
+function getPractitionerEmail(p: Practitioner): string | undefined {
+  return p.user?.email || p.email;
+}
+
+function formatPractitionerType(type: string): string {
+  return type
+    .split('_')
+    .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
+    .join(' ');
+}
 
 export default function SearchPage() {
   return (
@@ -88,12 +139,12 @@ function SearchPageContent() {
     setIsLoading(true);
     try {
       const response = await practitionersAPI.search({
-        type: type || undefined,
-        rating: minRating ? parseInt(minRating) : undefined,
-        available: true,
+        practitionerType: type || undefined,
+        minRating: minRating ? parseInt(minRating) : undefined,
+        isAvailable: true,
         limit: 24,
       });
-      setPractitioners(response.data.data?.practitioners || []);
+      setPractitioners(response.data.data || []);
     } catch {
       setPractitioners([]);
     } finally {
@@ -205,8 +256,13 @@ function SearchPageContent() {
           </div>
         </div>
 
-        {/* Results Grid */}
+        {/* Emergency Banner + Results */}
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          {/* Emergency Call Banner */}
+          <div className="mb-6">
+            <EmergencyCallBanner />
+          </div>
+
           <p className="mb-4 text-sm text-gray-500">
             {isLoading
               ? 'Searching...'
@@ -223,80 +279,135 @@ function SearchPageContent() {
             </div>
           ) : practitioners.length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {practitioners.map((practitioner) => (
-                <Card
-                  key={practitioner.id}
-                  className="h-full transition-all hover:border-green-200 hover:shadow-md"
-                >
-                  <CardContent className="p-5">
-                    {/* Header */}
-                    <div className="flex items-start gap-3">
-                      <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-green-50">
-                        <User className="h-7 w-7 text-green-700" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-semibold text-gray-900 truncate">
-                          Dr. {practitioner.firstName} {practitioner.lastName}
-                        </h3>
-                        <p className="text-sm text-gray-500 capitalize">
-                          {practitioner.type.replace('_', ' ')}
-                        </p>
-                      </div>
-                    </div>
+              {practitioners.map((practitioner) => {
+                const phone = getPractitionerPhone(practitioner);
+                const email = getPractitionerEmail(practitioner);
+                const fee = practitioner.baseConsultationFee;
 
-                    {/* Rating Stars */}
-                    <div className="mt-3 flex items-center gap-1">
-                      {renderStars(practitioner.rating)}
-                      <span className="ml-1 text-sm font-medium text-gray-700">
-                        {practitioner.rating.toFixed(1)}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        ({practitioner.totalReviews})
-                      </span>
-                    </div>
-
-                    {/* Specializations */}
-                    {practitioner.specializations && practitioner.specializations.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-1">
-                        {practitioner.specializations.slice(0, 3).map((spec) => (
-                          <Badge key={spec} variant="outline" size="sm">
-                            {spec}
-                          </Badge>
-                        ))}
-                        {practitioner.specializations.length > 3 && (
-                          <Badge variant="outline" size="sm">
-                            +{practitioner.specializations.length - 3}
-                          </Badge>
-                        )}
+                return (
+                  <Card
+                    key={practitioner.id}
+                    className="h-full transition-all hover:border-green-200 hover:shadow-md"
+                  >
+                    <CardContent className="p-5">
+                      {/* Header */}
+                      <div className="flex items-start gap-3">
+                        <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-full bg-green-50">
+                          <User className="h-7 w-7 text-green-700" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-semibold text-gray-900 truncate">
+                            {getPractitionerName(practitioner)}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            {formatPractitionerType(practitioner.practitionerType)}
+                          </p>
+                        </div>
                       </div>
-                    )}
 
-                    {/* Fee and Distance */}
-                    <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
-                      <div>
-                        <p className="text-lg font-bold text-green-700">
-                          {formatCurrency(practitioner.consultationFee)}
-                        </p>
-                        <p className="text-xs text-gray-400">per consultation</p>
+                      {/* Rating Stars */}
+                      <div className="mt-3 flex items-center gap-1">
+                        {renderStars(practitioner.ratingAvg)}
+                        <span className="ml-1 text-sm font-medium text-gray-700">
+                          {practitioner.ratingAvg.toFixed(1)}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          ({practitioner.ratingCount})
+                        </span>
                       </div>
-                      {practitioner.distance !== undefined && (
-                        <div className="flex items-center gap-1 text-sm text-gray-500">
-                          <MapPin className="h-4 w-4" />
-                          {practitioner.distance.toFixed(1)} km
+
+                      {/* Specializations */}
+                      {practitioner.specializations && practitioner.specializations.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-1">
+                          {practitioner.specializations.slice(0, 3).map((spec) => (
+                            <Badge key={spec} variant="outline" size="sm">
+                              {spec}
+                            </Badge>
+                          ))}
+                          {practitioner.specializations.length > 3 && (
+                            <Badge variant="outline" size="sm">
+                              +{practitioner.specializations.length - 3}
+                            </Badge>
+                          )}
                         </div>
                       )}
-                    </div>
 
-                    {/* Book Button */}
-                    <Link href={`/practitioners/${practitioner.id}`}>
-                      <Button className="mt-3 w-full">
-                        <CalendarPlus className="mr-2 h-4 w-4" />
-                        Book
-                      </Button>
-                    </Link>
-                  </CardContent>
-                </Card>
-              ))}
+                      {/* Contact Info */}
+                      <div className="mt-3 space-y-1">
+                        {phone && (
+                          <a
+                            href={`tel:${phone}`}
+                            className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-green-700"
+                          >
+                            <Phone className="h-3.5 w-3.5 text-gray-400" />
+                            {phone}
+                          </a>
+                        )}
+                        {email && (
+                          <a
+                            href={`mailto:${email}`}
+                            className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-green-700 truncate"
+                          >
+                            <Mail className="h-3.5 w-3.5 flex-shrink-0 text-gray-400" />
+                            <span className="truncate">{email}</span>
+                          </a>
+                        )}
+                      </div>
+
+                      {/* Availability Badges */}
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        {practitioner.offersHomeVisits && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                            <Home className="h-3 w-3" />
+                            Home Visits
+                          </span>
+                        )}
+                        {practitioner.offersClinicVisits && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                            <Building2 className="h-3 w-3" />
+                            Clinic Visits
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Operating Center */}
+                      {practitioner.offersClinicVisits && practitioner.operatingCenterName && (
+                        <div className="mt-2 flex items-start gap-1.5 text-xs text-gray-500">
+                          <Building2 className="mt-0.5 h-3 w-3 flex-shrink-0 text-gray-400" />
+                          <span>
+                            {practitioner.operatingCenterName}
+                            {practitioner.operatingCenterAddress && `, ${practitioner.operatingCenterAddress}`}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Fee and Distance */}
+                      <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-3">
+                        <div>
+                          <p className="text-lg font-bold text-green-700">
+                            {fee ? formatCurrency(Number(fee)) : 'N/A'}
+                          </p>
+                          <p className="text-xs text-gray-400">per consultation</p>
+                        </div>
+                        {practitioner.distanceKm !== undefined && (
+                          <div className="flex items-center gap-1 text-sm text-gray-500">
+                            <MapPin className="h-4 w-4" />
+                            {practitioner.distanceKm.toFixed(1)} km
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Book Button */}
+                      <Link href={`/practitioners/${practitioner.id}`}>
+                        <Button className="mt-3 w-full">
+                          <CalendarPlus className="mr-2 h-4 w-4" />
+                          Book
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           ) : (
             <div className="py-16 text-center">

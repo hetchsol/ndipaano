@@ -75,6 +75,18 @@ export class PractitionersService {
       data.serviceRadiusKm = dto.serviceRadiusKm;
     if (dto.baseConsultationFee !== undefined)
       data.baseConsultationFee = new Prisma.Decimal(dto.baseConsultationFee);
+    if (dto.operatingCenterName !== undefined)
+      data.operatingCenterName = dto.operatingCenterName;
+    if (dto.operatingCenterAddress !== undefined)
+      data.operatingCenterAddress = dto.operatingCenterAddress;
+    if (dto.operatingCenterCity !== undefined)
+      data.operatingCenterCity = dto.operatingCenterCity;
+    if (dto.operatingCenterPhone !== undefined)
+      data.operatingCenterPhone = dto.operatingCenterPhone;
+    if (dto.offersHomeVisits !== undefined)
+      data.offersHomeVisits = dto.offersHomeVisits;
+    if (dto.offersClinicVisits !== undefined)
+      data.offersClinicVisits = dto.offersClinicVisits;
 
     // Update language preference on the User record
     if (dto.languagePreference !== undefined) {
@@ -340,6 +352,18 @@ export class PractitionersService {
       paramIndex++;
     }
 
+    if (query.offersHomeVisits !== undefined) {
+      conditions.push(`pp."offersHomeVisits" = $${paramIndex}`);
+      params.push(query.offersHomeVisits);
+      paramIndex++;
+    }
+
+    if (query.offersClinicVisits !== undefined) {
+      conditions.push(`pp."offersClinicVisits" = $${paramIndex}`);
+      params.push(query.offersClinicVisits);
+      paramIndex++;
+    }
+
     const whereClause = conditions.join(' AND ');
 
     // Add limit and offset as parameters
@@ -375,8 +399,16 @@ export class PractitionersService {
         pp."ratingCount",
         pp.latitude,
         pp.longitude,
+        pp."operatingCenterName",
+        pp."operatingCenterAddress",
+        pp."operatingCenterCity",
+        pp."operatingCenterPhone",
+        pp."offersHomeVisits",
+        pp."offersClinicVisits",
         u."firstName",
         u."lastName",
+        u.email,
+        u.phone,
         u."languagePreference",
         ${distanceFormula} AS "distanceKm"
       FROM practitioner_profiles pp
@@ -467,6 +499,14 @@ export class PractitionersService {
       where.hpczVerified = query.hpczVerified;
     }
 
+    if (query.offersHomeVisits !== undefined) {
+      where.offersHomeVisits = query.offersHomeVisits;
+    }
+
+    if (query.offersClinicVisits !== undefined) {
+      where.offersClinicVisits = query.offersClinicVisits;
+    }
+
     const [data, total] = await Promise.all([
       this.prisma.practitionerProfile.findMany({
         where,
@@ -474,6 +514,8 @@ export class PractitionersService {
           user: {
             select: {
               id: true,
+              email: true,
+              phone: true,
               firstName: true,
               lastName: true,
               languagePreference: true,
@@ -508,6 +550,8 @@ export class PractitionersService {
         user: {
           select: {
             id: true,
+            email: true,
+            phone: true,
             firstName: true,
             lastName: true,
             languagePreference: true,

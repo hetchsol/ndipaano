@@ -146,16 +146,18 @@ export const bookingsAPI = {
 // --- Practitioners API ---
 export const practitionersAPI = {
   search: (params?: {
-    type?: string;
-    location?: string;
-    rating?: number;
-    minFee?: number;
+    practitionerType?: string;
+    latitude?: number;
+    longitude?: number;
+    radiusKm?: number;
+    minRating?: number;
     maxFee?: number;
-    available?: boolean;
+    isAvailable?: boolean;
+    offersHomeVisits?: boolean;
+    offersClinicVisits?: boolean;
     page?: number;
     limit?: number;
-    query?: string;
-  }) => api.get('/practitioners', { params }),
+  }) => api.get('/practitioners/search', { params }),
 
   getById: (id: string) => api.get(`/practitioners/${id}`),
 
