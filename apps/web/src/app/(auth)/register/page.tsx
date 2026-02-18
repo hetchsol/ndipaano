@@ -64,6 +64,15 @@ const patientSchema = z.object({
 }, {
   message: 'This field is required',
   path: ['nrc'],
+}).refine((data) => {
+  // Validate NRC format only for Zambian nationals who provided a value
+  if (data.nationality === 'Zambian' && data.nrc && data.nrc.trim().length > 0) {
+    return /^\d{6}\/\d{2}\/\d{1}$/.test(data.nrc.trim());
+  }
+  return true;
+}, {
+  message: 'NRC must be in format 123456/67/9 (6 digits/2 digits/1 digit)',
+  path: ['nrc'],
 });
 
 const practitionerSchema = z.object({
@@ -284,7 +293,7 @@ export default function RegisterPage() {
                   : 'NRC Number (Optional — under 18)';
               const placeholder = !isZambian
                 ? 'e.g., AB1234567'
-                : 'e.g., 123456/78/1';
+                : 'e.g., 123456/67/9';
 
               // Hide field entirely if nationality not yet selected
               if (!nationality) return null;
@@ -371,7 +380,12 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <Button type="submit" className="w-full" isLoading={isLoading}>
+            <Button
+              type="submit"
+              className="w-full"
+              isLoading={isLoading}
+              disabled={!patientForm.watch('consentDataProcessing') || !patientForm.watch('consentTerms')}
+            >
               <UserPlus className="mr-2 h-4 w-4" />
               Create Client Account
             </Button>
@@ -517,7 +531,16 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <Button type="submit" className="w-full" isLoading={isLoading}>
+            <Button
+              type="submit"
+              className="w-full"
+              isLoading={isLoading}
+              disabled={
+                !practitionerForm.watch('consentDataProcessing') ||
+                !practitionerForm.watch('consentTerms') ||
+                !practitionerForm.watch('consentVerification')
+              }
+            >
               <UserPlus className="mr-2 h-4 w-4" />
               Create Practitioner Account
             </Button>

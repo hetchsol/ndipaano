@@ -148,8 +148,8 @@ export class RegisterPatientDto {
 
   @ApiPropertyOptional({
     description:
-      'NRC number (required for Zambian nationals aged 18+) or Passport number (required for non-Zambians). Optional for Zambian nationals under 18.',
-    example: '123456/78/1',
+      'NRC number (required for Zambian nationals aged 18+, format: 123456/67/9) or Passport number (required for non-Zambians). Optional for Zambian nationals under 18.',
+    example: '123456/67/9',
   })
   @IsOptional()
   @ValidateIf((o) => {

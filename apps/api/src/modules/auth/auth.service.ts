@@ -105,6 +105,16 @@ export class AuthService {
       );
     }
 
+    // Validate NRC format for Zambian nationals
+    if (dto.nationality === 'Zambian' && dto.nrc) {
+      const nrcRegex = /^\d{6}\/\d{2}\/\d{1}$/;
+      if (!nrcRegex.test(dto.nrc)) {
+        throw new BadRequestException(
+          'NRC must be in format 123456/67/9 (6 digits/2 digits/1 digit)',
+        );
+      }
+    }
+
     // Hash the password
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
 
