@@ -221,17 +221,17 @@ export class AuthController {
     schema: {
       type: 'object',
       properties: {
-        email: { type: 'string', format: 'email', example: 'user@example.com' },
+        identifier: { type: 'string', example: 'user@example.com or +260971234567' },
       },
-      required: ['email'],
+      required: ['identifier'],
     },
   })
   @ApiResponse({
     status: 200,
     description: 'Password reset link sent (if account exists)',
   })
-  async requestPasswordReset(@Body('email') email: string) {
-    return this.authService.requestPasswordReset(email);
+  async requestPasswordReset(@Body('identifier') identifier: string) {
+    return this.authService.requestPasswordReset(identifier);
   }
 
   @Public()

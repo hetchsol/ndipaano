@@ -2,6 +2,7 @@ import {
   IsEmail,
   IsString,
   IsNotEmpty,
+  IsOptional,
   MinLength,
   MaxLength,
   Matches,
@@ -12,8 +13,9 @@ import {
   Max,
   IsDateString,
   Equals,
+  ValidateIf,
 } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 
 /**
@@ -42,16 +44,18 @@ enum PractitionerType {
 }
 
 export class RegisterPatientDto {
-  @ApiProperty({
-    description: 'User email address',
+  @ApiPropertyOptional({
+    description: 'User email address (optional)',
     example: 'patient@example.com',
   })
+  @IsOptional()
+  @ValidateIf((o) => o.email !== undefined && o.email !== null && o.email !== '')
   @IsEmail({}, { message: 'Invalid email address' })
   @MaxLength(255, { message: 'Email must be at most 255 characters' })
   @Transform(({ value }) =>
-    typeof value === 'string' ? value.toLowerCase().trim() : value,
+    typeof value === 'string' && value.trim() !== '' ? value.toLowerCase().trim() : undefined,
   )
-  email: string;
+  email?: string;
 
   @ApiProperty({
     description: 'Zambian phone number in format +260XXXXXXXXX',
@@ -131,6 +135,44 @@ export class RegisterPatientDto {
   gender: Gender;
 
   @ApiProperty({
+    description: 'Nationality of the client (e.g. "Zambian" or "Other")',
+    example: 'Zambian',
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'Nationality is required' })
+  @MaxLength(100, { message: 'Nationality must be at most 100 characters' })
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  nationality: string;
+
+  @ApiPropertyOptional({
+    description:
+      'NRC number (required for Zambian nationals aged 18+) or Passport number (required for non-Zambians). Optional for Zambian nationals under 18.',
+    example: '123456/78/1',
+  })
+  @IsOptional()
+  @ValidateIf((o) => {
+    if (!o.nationality || !o.dateOfBirth) return false;
+    // Non-Zambian: passport required
+    if (o.nationality !== 'Zambian') return true;
+    // Zambian 18+: NRC required
+    const dob = new Date(o.dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+    return age >= 18;
+  })
+  @IsString()
+  @IsNotEmpty({ message: 'NRC or Passport number is required' })
+  @MaxLength(50, { message: 'NRC/Passport number must be at most 50 characters' })
+  @Transform(({ value }) =>
+    typeof value === 'string' && value.trim() !== '' ? value.trim() : undefined,
+  )
+  nrc?: string;
+
+  @ApiProperty({
     description: 'Consent to data processing (must be true)',
     example: true,
   })
@@ -152,6 +194,27 @@ export class RegisterPatientDto {
 }
 
 export class RegisterPractitionerDto extends RegisterPatientDto {
+  @ApiPropertyOptional({
+    description: 'Nationality (optional for practitioners)',
+    example: 'Zambian',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  override nationality: string;
+
+  @ApiPropertyOptional({
+    description: 'NRC or Passport number (optional for practitioners)',
+    example: '123456/78/1',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(50, { message: 'NRC/Passport number must be at most 50 characters' })
+  @Transform(({ value }) =>
+    typeof value === 'string' ? value.trim() : value,
+  )
+  override nrc?: string;
+
   @ApiProperty({
     description: 'Type of healthcare practitioner',
     enum: PractitionerType,

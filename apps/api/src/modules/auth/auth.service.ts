@@ -83,13 +83,15 @@ export class AuthService {
   async registerPatient(
     dto: RegisterPatientDto,
   ): Promise<TokenPair & { user: Record<string, unknown> }> {
-    // Check if email already exists
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    // Check if email already exists (only when email is provided)
+    if (dto.email) {
+      const existingUser = await this.prisma.user.findUnique({
+        where: { email: dto.email },
+      });
 
-    if (existingUser) {
-      throw new ConflictException('A user with this email already exists');
+      if (existingUser) {
+        throw new ConflictException('A user with this email already exists');
+      }
     }
 
     // Check if phone already exists
@@ -107,10 +109,10 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_ROUNDS);
 
     // Create user, patient profile, and consent records in a transaction
-    const user = await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: {
-          email: dto.email,
+          email: dto.email || null,
           phone: dto.phone,
           passwordHash,
           firstName: dto.firstName,
@@ -120,10 +122,19 @@ export class AuthService {
         },
       });
 
-      // Create patient profile with date of birth and gender
+      // Generate unique member ID: NDP-{YEAR}-{sequence}
+      const patientCount = await tx.patientProfile.count();
+      const year = new Date().getFullYear();
+      const sequence = String(patientCount + 1).padStart(5, '0');
+      const memberId = `NDP-${year}-${sequence}`;
+
+      // Create patient profile with date of birth, gender, nationality, nrc, and memberId
       await tx.patientProfile.create({
         data: {
           userId: newUser.id,
+          memberId,
+          nrc: dto.nrc || null,
+          nationality: dto.nationality,
           dateOfBirth: new Date(dto.dateOfBirth),
           gender: dto.gender,
         },
@@ -154,24 +165,25 @@ export class AuthService {
         ],
       });
 
-      return newUser;
+      return { user: newUser, memberId };
     });
 
     // Generate tokens
     const tokens = await this.generateTokens({
-      id: user.id,
-      email: user.email,
-      role: user.role,
+      id: result.user.id,
+      email: result.user.email || '',
+      role: result.user.role,
     });
 
     return {
       ...tokens,
       user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
+        id: result.user.id,
+        email: result.user.email,
+        firstName: result.user.firstName,
+        lastName: result.user.lastName,
+        role: result.user.role,
+        memberId: result.memberId,
       },
     };
   }
@@ -652,20 +664,28 @@ export class AuthService {
    *
    * Always returns a success message to prevent email enumeration attacks.
    */
-  async requestPasswordReset(email: string): Promise<{ message: string }> {
-    const user = await this.prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
-      select: { id: true, email: true, firstName: true },
-    });
+  async requestPasswordReset(identifier: string): Promise<{ message: string }> {
+    // Detect if input is phone number or email
+    const isPhone = /^\+\d/.test(identifier.trim());
 
-    // Always return success to prevent email enumeration attacks
+    const user = isPhone
+      ? await this.prisma.user.findUnique({
+          where: { phone: identifier.trim() },
+          select: { id: true, email: true, firstName: true },
+        })
+      : await this.prisma.user.findUnique({
+          where: { email: identifier.toLowerCase().trim() },
+          select: { id: true, email: true, firstName: true },
+        });
+
+    // Always return success to prevent enumeration attacks
     if (!user) {
       this.logger.warn(
-        `Password reset requested for non-existent email: ${email}`,
+        `Password reset requested for non-existent identifier: ${identifier}`,
       );
       return {
         message:
-          'If an account with that email exists, a password reset link has been sent.',
+          'If an account with that email or phone number exists, a password reset link has been sent.',
       };
     }
 
@@ -710,7 +730,7 @@ export class AuthService {
 
     return {
       message:
-        'If an account with that email exists, a password reset link has been sent.',
+        'If an account with that email or phone number exists, a password reset link has been sent.',
     };
   }
 

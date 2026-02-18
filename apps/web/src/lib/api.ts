@@ -71,13 +71,15 @@ export const authAPI = {
     api.post('/auth/login', data),
 
   registerPatient: (data: {
-    email: string;
+    email?: string;
     password: string;
     firstName: string;
     lastName: string;
     phone: string;
-    dateOfBirth?: string;
-    gender?: string;
+    dateOfBirth: string;
+    gender: string;
+    nationality: string;
+    nrc?: string;
   }) => api.post('/auth/register/patient', data),
 
   registerPractitioner: (data: {
@@ -95,8 +97,8 @@ export const authAPI = {
   refresh: (refreshToken: string) =>
     api.post('/auth/refresh', { refreshToken }),
 
-  forgotPassword: (email: string) =>
-    api.post('/auth/forgot-password', { email }),
+  forgotPassword: (identifier: string) =>
+    api.post('/auth/password/reset-request', { identifier }),
 
   resetPassword: (data: { token: string; password: string }) =>
     api.post('/auth/reset-password', data),

@@ -86,7 +86,7 @@ const steps = [
 ];
 
 const stats = [
-  { value: '2,500+', label: 'Registered Patients' },
+  { value: '2,500+', label: 'Registered Clients' },
   { value: '350+', label: 'Verified Practitioners' },
   { value: '10,000+', label: 'Consultations Completed' },
   { value: '4.8', label: 'Average Rating', icon: Star },
@@ -111,16 +111,18 @@ export default function LandingPage() {
               <span className="text-secondary-400">Doorstep</span>
             </h1>
             <p className="mt-6 text-lg leading-8 text-gray-200">
-              Ndipaano connects Zambian patients with verified healthcare practitioners
+              Ndipaano! connects Zambian patients with verified healthcare practitioners
               for professional home-based medical care. Book home visits, virtual
               consultations, and manage your health records -- all in one secure platform.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link href="/register">
-                <Button size="lg" className="w-full bg-white text-primary-700 hover:bg-gray-100 sm:w-auto">
-                  Register as Patient
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                <div className="group w-full cursor-pointer rounded-xl border-2 border-white bg-white px-8 py-4 text-center transition-all hover:bg-primary-700 hover:border-primary-700 sm:w-auto">
+                  <span className="flex items-center justify-center text-lg font-semibold text-primary-700 group-hover:text-white">
+                    Register as Client
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </span>
+                </div>
               </Link>
               <Link href="/register">
                 <Button
@@ -206,7 +208,7 @@ export default function LandingPage() {
               How It Works
             </h2>
             <p className="mt-4 text-lg text-gray-500">
-              Getting quality healthcare at home is simple with Ndipaano.
+              Getting quality healthcare at home is simple with Ndipaano!.
             </p>
           </div>
 
@@ -285,15 +287,17 @@ export default function LandingPage() {
             Ready to Get Started?
           </h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-gray-500">
-            Join thousands of Zambians who trust Ndipaano for their healthcare needs.
+            Join thousands of Zambians who trust Ndipaano! for their healthcare needs.
             Register today and experience healthcare that comes to you.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link href="/register">
-              <Button size="lg">
-                Register as Patient
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <div className="group cursor-pointer rounded-xl border-2 border-primary-700 bg-white px-8 py-4 text-center transition-all hover:bg-primary-700">
+                <span className="flex items-center justify-center text-lg font-semibold text-primary-700 group-hover:text-white">
+                  Register as Client
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </span>
+              </div>
             </Link>
             <Link href="/register">
               <Button size="lg" variant="secondary">

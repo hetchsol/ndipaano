@@ -14,11 +14,27 @@ import { Select } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Eye, EyeOff, UserPlus } from 'lucide-react';
 
+/**
+ * Calculate age from a date-of-birth string (YYYY-MM-DD).
+ */
+function getAge(dateOfBirth: string): number {
+  const dob = new Date(dateOfBirth);
+  const today = new Date();
+  let age = today.getFullYear() - dob.getFullYear();
+  const m = today.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+  return age;
+}
+
 const patientSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  email: z.string().email('Please enter a valid email address'),
+  email: z.string().email('Please enter a valid email address').optional().or(z.literal('')),
   phone: z.string().min(10, 'Please enter a valid Zambian phone number'),
+  sex: z.string().min(1, 'Please select your sex'),
+  dateOfBirth: z.string().min(1, 'Date of birth is required'),
+  nationality: z.string().min(1, 'Nationality is required'),
+  nrc: z.string().optional().or(z.literal('')),
   password: z
     .string()
     .min(8, 'Password must be at least 8 characters')
@@ -34,6 +50,20 @@ const patientSchema = z.object({
 }).refine((data) => data.password === data.confirmPassword, {
   message: 'Passwords do not match',
   path: ['confirmPassword'],
+}).refine((data) => {
+  // Non-Zambian: passport is required
+  if (data.nationality !== 'Zambian') {
+    return !!data.nrc && data.nrc.trim().length > 0;
+  }
+  // Zambian aged 18+: NRC is required
+  if (data.dateOfBirth && getAge(data.dateOfBirth) >= 18) {
+    return !!data.nrc && data.nrc.trim().length > 0;
+  }
+  // Zambian under 18: NRC not required
+  return true;
+}, {
+  message: 'This field is required',
+  path: ['nrc'],
 });
 
 const practitionerSchema = z.object({
@@ -65,6 +95,17 @@ const practitionerSchema = z.object({
 
 type PatientFormData = z.infer<typeof patientSchema>;
 type PractitionerFormData = z.infer<typeof practitionerSchema>;
+
+const sexOptions = [
+  { value: 'MALE', label: 'Male' },
+  { value: 'FEMALE', label: 'Female' },
+  { value: 'OTHER', label: 'Other' },
+];
+
+const nationalityOptions = [
+  { value: 'Zambian', label: 'Zambian' },
+  { value: 'Other', label: 'Other (Non-Zambian)' },
+];
 
 const practitionerTypes = [
   { value: 'doctor', label: 'Doctor (General Practitioner)' },
@@ -106,15 +147,22 @@ export default function RegisterPage() {
   const onPatientSubmit = async (data: PatientFormData) => {
     setIsLoading(true);
     try {
-      await registerUser({
-        email: data.email,
+      const result = await registerUser({
+        email: data.email || undefined,
         password: data.password,
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone,
         role: 'patient',
+        gender: data.sex,
+        dateOfBirth: data.dateOfBirth,
+        nationality: data.nationality,
+        nrc: data.nrc || undefined,
       });
-      toast.success('Account created successfully! Welcome to Ndipaano.');
+      toast.success('Account created successfully! Welcome to Ndipaano!.');
+      if (result?.memberId) {
+        toast.success(`Your Member ID is ${result.memberId}`, { duration: 10000 });
+      }
       router.push('/patient/dashboard');
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } } };
@@ -157,7 +205,7 @@ export default function RegisterPage() {
       <Tabs defaultValue="patient" value={activeTab} onValueChange={setActiveTab} className="mt-6">
         <TabsList className="w-full">
           <TabsTrigger value="patient" className="flex-1">
-            Patient
+            Client
           </TabsTrigger>
           <TabsTrigger value="practitioner" className="flex-1">
             Practitioner
@@ -183,7 +231,7 @@ export default function RegisterPage() {
             </div>
 
             <Input
-              label="Email Address"
+              label="Email Address (Optional)"
               type="email"
               placeholder="john@example.com"
               error={patientForm.formState.errors.email?.message}
@@ -197,6 +245,57 @@ export default function RegisterPage() {
               error={patientForm.formState.errors.phone?.message}
               {...patientForm.register('phone')}
             />
+
+            <Select
+              label="Sex"
+              options={sexOptions}
+              placeholder="Select your sex"
+              error={patientForm.formState.errors.sex?.message}
+              {...patientForm.register('sex')}
+            />
+
+            <Input
+              label="Date of Birth"
+              type="date"
+              error={patientForm.formState.errors.dateOfBirth?.message}
+              {...patientForm.register('dateOfBirth')}
+            />
+
+            <Select
+              label="Nationality"
+              options={nationalityOptions}
+              placeholder="Select your nationality"
+              error={patientForm.formState.errors.nationality?.message}
+              {...patientForm.register('nationality')}
+            />
+
+            {(() => {
+              const nationality = patientForm.watch('nationality');
+              const dob = patientForm.watch('dateOfBirth');
+              const isZambian = nationality === 'Zambian';
+              const age = dob ? getAge(dob) : 0;
+              const isOptional = isZambian && dob && age < 18;
+              const label = !isZambian
+                ? 'Passport Number'
+                : age >= 18
+                  ? 'NRC Number'
+                  : 'NRC Number (Optional — under 18)';
+              const placeholder = !isZambian
+                ? 'e.g., AB1234567'
+                : 'e.g., 123456/78/1';
+
+              // Hide field entirely if nationality not yet selected
+              if (!nationality) return null;
+
+              return (
+                <Input
+                  label={label}
+                  placeholder={placeholder}
+                  error={patientForm.formState.errors.nrc?.message}
+                  {...patientForm.register('nrc')}
+                />
+              );
+            })()}
 
             <div className="relative">
               <Input
@@ -272,7 +371,7 @@ export default function RegisterPage() {
 
             <Button type="submit" className="w-full" isLoading={isLoading}>
               <UserPlus className="mr-2 h-4 w-4" />
-              Create Patient Account
+              Create Client Account
             </Button>
           </form>
         </TabsContent>

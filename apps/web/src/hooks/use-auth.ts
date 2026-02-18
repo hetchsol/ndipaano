@@ -57,7 +57,7 @@ interface AuthState {
   isLoading: boolean;
   login: (email: string, password: string, twoFactorCode?: string) => Promise<void>;
   register: (data: {
-    email: string;
+    email?: string;
     password: string;
     firstName: string;
     lastName: string;
@@ -65,7 +65,11 @@ interface AuthState {
     role: 'patient' | 'practitioner';
     practitionerType?: string;
     licenseNumber?: string;
-  }) => Promise<void>;
+    gender?: string;
+    dateOfBirth?: string;
+    nationality?: string;
+    nrc?: string;
+  }) => Promise<{ memberId?: string }>;
   logout: () => void;
   setUser: (user: User) => void;
   refreshUser: () => Promise<void>;
@@ -120,7 +124,7 @@ export const useAuth = create<AuthState>((set, get) => ({
   register: async (data) => {
     const response = data.role === 'practitioner'
       ? await authAPI.registerPractitioner({
-          email: data.email,
+          email: data.email || '',
           password: data.password,
           firstName: data.firstName,
           lastName: data.lastName,
@@ -129,11 +133,15 @@ export const useAuth = create<AuthState>((set, get) => ({
           hpczRegistrationNumber: data.licenseNumber || '',
         })
       : await authAPI.registerPatient({
-          email: data.email,
+          email: data.email || undefined,
           password: data.password,
           firstName: data.firstName,
           lastName: data.lastName,
           phone: data.phone,
+          dateOfBirth: data.dateOfBirth || '',
+          gender: data.gender || '',
+          nationality: data.nationality || '',
+          nrc: data.nrc || undefined,
         });
 
     const { user: apiUser, accessToken, refreshToken } = response.data.data;
@@ -147,6 +155,8 @@ export const useAuth = create<AuthState>((set, get) => ({
     setAuthCookies(accessToken, mappedRole);
 
     set({ user, token: accessToken, isAuthenticated: true, isLoading: false });
+
+    return { memberId: apiUser.memberId };
   },
 
   logout: () => {
