@@ -117,16 +117,14 @@ const nationalityOptions = [
 ];
 
 const practitionerTypes = [
-  { value: 'doctor', label: 'Doctor (General Practitioner)' },
-  { value: 'specialist', label: 'Specialist Doctor' },
-  { value: 'nurse', label: 'Registered Nurse' },
-  { value: 'midwife', label: 'Midwife' },
-  { value: 'physiotherapist', label: 'Physiotherapist' },
-  { value: 'pharmacist', label: 'Pharmacist' },
-  { value: 'clinical_officer', label: 'Clinical Officer' },
-  { value: 'lab_technician', label: 'Laboratory Technician' },
-  { value: 'counselor', label: 'Mental Health Counselor' },
-  { value: 'dentist', label: 'Dentist' },
+  { value: 'GENERAL_PRACTITIONER', label: 'Doctor (General Practitioner)' },
+  { value: 'SPECIALIST_DOCTOR', label: 'Specialist Doctor' },
+  { value: 'REGISTERED_NURSE', label: 'Registered Nurse' },
+  { value: 'ENROLLED_NURSE', label: 'Enrolled Nurse' },
+  { value: 'MIDWIFE', label: 'Midwife' },
+  { value: 'PHYSIOTHERAPIST', label: 'Physiotherapist' },
+  { value: 'PHARMACIST', label: 'Pharmacist' },
+  { value: 'CLINICAL_OFFICER', label: 'Clinical Officer' },
 ];
 
 export default function RegisterPage() {
@@ -195,6 +193,8 @@ export default function RegisterPage() {
         role: 'practitioner',
         practitionerType: data.practitionerType,
         licenseNumber: data.licenseNumber,
+        consentDataProcessing: data.consentDataProcessing,
+        consentTerms: data.consentTerms,
       });
       toast.success('Account created! Your credentials will be verified within 48 hours.');
       router.push('/practitioner/dashboard');

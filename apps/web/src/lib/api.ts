@@ -94,6 +94,8 @@ export const authAPI = {
     hpczRegistrationNumber: string;
     serviceRadiusKm?: number;
     baseConsultationFee?: number;
+    consentDataProcessing: boolean;
+    consentTerms: boolean;
   }) => api.post('/auth/register/practitioner', data),
 
   refresh: (refreshToken: string) =>

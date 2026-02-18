@@ -195,6 +195,20 @@ export class RegisterPatientDto {
 
 export class RegisterPractitionerDto extends RegisterPatientDto {
   @ApiPropertyOptional({
+    description: 'Date of birth (optional for practitioners)',
+    example: '1990-05-15',
+  })
+  @IsOptional()
+  override dateOfBirth: string;
+
+  @ApiPropertyOptional({
+    description: 'Gender (optional for practitioners)',
+    example: 'MALE',
+  })
+  @IsOptional()
+  override gender: Gender;
+
+  @ApiPropertyOptional({
     description: 'Nationality (optional for practitioners)',
     example: 'Zambian',
   })
@@ -205,7 +219,7 @@ export class RegisterPractitionerDto extends RegisterPatientDto {
 
   @ApiPropertyOptional({
     description: 'NRC or Passport number (optional for practitioners)',
-    example: '123456/78/1',
+    example: '123456/67/9',
   })
   @IsOptional()
   @IsString()
@@ -240,21 +254,25 @@ export class RegisterPractitionerDto extends RegisterPatientDto {
   )
   hpczRegistrationNumber: string;
 
-  @ApiProperty({
-    description: 'Service radius in kilometers (1-100)',
+  @ApiPropertyOptional({
+    description: 'Service radius in kilometers (1-100), defaults to 25',
     example: 25,
+    default: 25,
   })
+  @IsOptional()
   @IsNumber({}, { message: 'Service radius must be a number' })
   @Min(1, { message: 'Service radius must be at least 1 km' })
   @Max(100, { message: 'Service radius must be at most 100 km' })
-  serviceRadiusKm: number;
+  serviceRadiusKm?: number;
 
-  @ApiProperty({
-    description: 'Base consultation fee in ZMW (0-100,000)',
+  @ApiPropertyOptional({
+    description: 'Base consultation fee in ZMW (0-100,000), defaults to 0',
     example: 350,
+    default: 0,
   })
+  @IsOptional()
   @IsNumber({}, { message: 'Base consultation fee must be a number' })
   @Min(0, { message: 'Consultation fee cannot be negative' })
   @Max(100000, { message: 'Consultation fee must be at most 100,000 ZMW' })
-  baseConsultationFee: number;
+  baseConsultationFee?: number;
 }

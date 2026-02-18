@@ -131,8 +131,10 @@ export const useAuth = create<AuthState>((set, get) => ({
           firstName: data.firstName,
           lastName: data.lastName,
           phone: data.phone,
-          practitionerType: data.practitionerType || 'NURSE',
+          practitionerType: data.practitionerType || 'REGISTERED_NURSE',
           hpczRegistrationNumber: data.licenseNumber || '',
+          consentDataProcessing: data.consentDataProcessing ?? true,
+          consentTerms: data.consentTerms ?? true,
         })
       : await authAPI.registerPatient({
           email: data.email || undefined,
