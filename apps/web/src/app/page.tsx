@@ -117,18 +117,18 @@ export default function LandingPage() {
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link href="/register">
-                <div className="group w-full cursor-pointer rounded-xl border-2 border-white bg-white px-8 py-4 text-center transition-all hover:bg-primary-700 hover:border-primary-700 sm:w-auto">
-                  <span className="flex items-center justify-center text-lg font-semibold text-primary-700 group-hover:text-white">
-                    Register as Client
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </span>
-                </div>
+                <Button
+                  size="lg"
+                  className="w-full border-2 border-white bg-white text-primary-700 hover:bg-primary-700 hover:text-white hover:border-primary-700 transition-all sm:w-auto"
+                >
+                  Register as Client
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </Link>
               <Link href="/register">
                 <Button
                   size="lg"
-                  variant="outline"
-                  className="w-full border-white/30 text-white hover:bg-white/10 sm:w-auto"
+                  className="w-full border-2 border-white bg-white text-primary-700 hover:bg-primary-700 hover:text-white hover:border-primary-700 transition-all sm:w-auto"
                 >
                   Join as Practitioner
                 </Button>
@@ -292,15 +292,19 @@ export default function LandingPage() {
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link href="/register">
-              <div className="group cursor-pointer rounded-xl border-2 border-primary-700 bg-white px-8 py-4 text-center transition-all hover:bg-primary-700">
-                <span className="flex items-center justify-center text-lg font-semibold text-primary-700 group-hover:text-white">
-                  Register as Client
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </span>
-              </div>
+              <Button
+                size="lg"
+                className="border-2 border-primary-700 bg-white text-primary-700 hover:bg-primary-700 hover:text-white transition-all"
+              >
+                Register as Client
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </Link>
             <Link href="/register">
-              <Button size="lg" variant="secondary">
+              <Button
+                size="lg"
+                className="border-2 border-primary-700 bg-white text-primary-700 hover:bg-primary-700 hover:text-white transition-all"
+              >
                 Join as Practitioner
               </Button>
             </Link>
