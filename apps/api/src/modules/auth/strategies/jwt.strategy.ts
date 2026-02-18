@@ -9,7 +9,7 @@ import { PrismaService } from '../../../prisma/prisma.service';
  */
 export interface JwtPayload {
   sub: string;
-  email: string;
+  email: string | null;
   role: string;
   iat?: number;
   exp?: number;
@@ -20,7 +20,7 @@ export interface JwtPayload {
  */
 export interface ValidatedUser {
   id: string;
-  email: string;
+  email: string | null;
   role: string;
 }
 

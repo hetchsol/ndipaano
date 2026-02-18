@@ -107,7 +107,7 @@ export class AuthController {
     status: 401,
     description: 'Invalid credentials',
   })
-  async login(@CurrentUser() user: { id: string; email: string; role: string; twoFactorEnabled: boolean }) {
+  async login(@CurrentUser() user: { id: string; email: string | null; role: string; twoFactorEnabled: boolean }) {
     return this.authService.login(user);
   }
 

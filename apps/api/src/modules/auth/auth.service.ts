@@ -27,7 +27,7 @@ export interface TokenPair {
  */
 interface TokenPayload {
   sub: string;
-  email: string;
+  email: string | null;
   role: string;
 }
 
@@ -318,7 +318,7 @@ export class AuthService {
    */
   async login(user: {
     id: string;
-    email: string;
+    email: string | null;
     role: string;
     twoFactorEnabled?: boolean;
   }): Promise<
@@ -390,7 +390,7 @@ export class AuthService {
     password: string,
   ): Promise<{
     id: string;
-    email: string;
+    email: string | null;
     role: string;
     twoFactorEnabled: boolean;
   } | null> {
@@ -468,7 +468,7 @@ export class AuthService {
    */
   async generateTokens(user: {
     id: string;
-    email: string;
+    email: string | null;
     role: string;
   }): Promise<TokenPair> {
     const payload: TokenPayload = {
@@ -531,7 +531,7 @@ export class AuthService {
     // Generate TOTP secret
     const totp = new OTPAuth.TOTP({
       issuer: 'Ndipaano',
-      label: user.email,
+      label: user.email || user.id,
       algorithm: 'SHA1',
       digits: 6,
       period: 30,
