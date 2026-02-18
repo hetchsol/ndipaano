@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   Stethoscope,
   Heart,
-  Bandage,
+  Cross,
   Syringe,
   Droplets,
   Activity,
@@ -44,7 +44,7 @@ const services = [
     title: 'Wound Dressing',
     description:
       'Expert wound care and dressing changes for surgical wounds, burns, ulcers, and other injuries. Proper sterile technique ensures optimal healing.',
-    icon: Bandage,
+    icon: Cross,
   },
   {
     key: 'INJECTION_ADMINISTRATION',

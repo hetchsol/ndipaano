@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import {
   Stethoscope,
   Heart,
-  Bandage,
+  Cross,
   Syringe,
   Droplets,
   Activity,
@@ -41,7 +41,7 @@ const serviceRates = [
   {
     key: 'WOUND_DRESSING',
     title: 'Wound Dressing',
-    icon: Bandage,
+    icon: Cross,
     range: 'K100 – K250',
     note: 'Per dressing, materials included',
   },
