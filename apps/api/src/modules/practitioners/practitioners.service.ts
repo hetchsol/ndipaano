@@ -364,6 +364,16 @@ export class PractitionersService {
       paramIndex++;
     }
 
+    if (query.diagnosticTestId) {
+      conditions.push(`EXISTS (
+        SELECT 1 FROM practitioner_type_diagnostic_tests ptdt
+        WHERE ptdt."practitionerType"::text = pp."practitionerType"::text
+          AND ptdt."diagnosticTestId" = $${paramIndex}::uuid
+      )`);
+      params.push(query.diagnosticTestId);
+      paramIndex++;
+    }
+
     const whereClause = conditions.join(' AND ');
 
     // Add limit and offset as parameters
@@ -507,6 +517,21 @@ export class PractitionersService {
       where.offersClinicVisits = query.offersClinicVisits;
     }
 
+    if (query.diagnosticTestId) {
+      // Find which practitioner types support this test
+      const mappings = await this.prisma.practitionerTypeDiagnosticTest.findMany({
+        where: { diagnosticTestId: query.diagnosticTestId },
+        select: { practitionerType: true },
+      });
+      const types = mappings.map((m) => m.practitionerType);
+      if (types.length > 0) {
+        where.practitionerType = { in: types };
+      } else {
+        // No practitioner type supports this test — return empty
+        return { data: [], meta: { total: 0, page, limit, totalPages: 0 } };
+      }
+    }
+
     const [data, total] = await Promise.all([
       this.prisma.practitionerProfile.findMany({
         where,
@@ -569,7 +594,37 @@ export class PractitionersService {
       throw new NotFoundException('Practitioner not found');
     }
 
-    return profile;
+    // Fetch available diagnostic tests grouped by category
+    const tests = await this.prisma.diagnosticTest.findMany({
+      where: {
+        isActive: true,
+        practitionerTypes: {
+          some: { practitionerType: profile.practitionerType },
+        },
+      },
+      orderBy: [{ category: 'asc' }, { sortOrder: 'asc' }],
+    });
+
+    const diagnosticTests: Record<string, { label: string; tests: typeof tests }> = {};
+    const categoryLabels: Record<string, string> = {
+      LAB_TEST: 'Lab Tests',
+      RAPID_TEST: 'Rapid Tests',
+      IMAGING: 'Imaging',
+      SWAB_CULTURE: 'Swabs & Cultures',
+      SCREENING: 'Screening',
+      SPECIALIZED: 'Specialized',
+    };
+    for (const test of tests) {
+      if (!diagnosticTests[test.category]) {
+        diagnosticTests[test.category] = {
+          label: categoryLabels[test.category] || test.category,
+          tests: [],
+        };
+      }
+      diagnosticTests[test.category].tests.push(test);
+    }
+
+    return { ...profile, diagnosticTests };
   }
 
   /**

@@ -145,6 +145,22 @@ export const bookingsAPI = {
     api.post(`/bookings/${id}/notes`, { notes }),
 };
 
+// --- Diagnostic Tests API ---
+export const diagnosticTestsAPI = {
+  search: (params?: {
+    category?: string;
+    practitionerType?: string;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }) => api.get('/diagnostic-tests', { params }),
+
+  getCategories: () => api.get('/diagnostic-tests/categories'),
+
+  getByPractitionerType: (type: string) =>
+    api.get(`/diagnostic-tests/by-practitioner-type/${type}`),
+};
+
 // --- Practitioners API ---
 export const practitionersAPI = {
   search: (params?: {
@@ -157,6 +173,7 @@ export const practitionersAPI = {
     isAvailable?: boolean;
     offersHomeVisits?: boolean;
     offersClinicVisits?: boolean;
+    diagnosticTestId?: string;
     page?: number;
     limit?: number;
   }) => api.get('/practitioners/search', { params }),

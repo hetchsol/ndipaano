@@ -352,7 +352,7 @@ export default function ConsentPage() {
               </a>
             </p>
             <p className="mt-2 text-xs text-gray-400">
-              Office of the Data Protection Commissioner: Plot 4950, Mwinilunga Road, Lusaka, Zambia
+              Hetch Solutions Plot 13335, 27th Street, Nkaka East, Kitwe, Zambia
             </p>
           </div>
         </div>

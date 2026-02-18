@@ -599,3 +599,46 @@ model EmergencyContact {
   @@index([userId])
   @@map("emergency_contacts")
 }
+
+// =============================================================================
+// Diagnostic Tests
+// =============================================================================
+
+enum DiagnosticTestCategory {
+  LAB_TEST
+  RAPID_TEST
+  IMAGING
+  SWAB_CULTURE
+  SCREENING
+  SPECIALIZED
+}
+
+model DiagnosticTest {
+  id          String                  @id @default(uuid()) @db.Uuid
+  name        String                  @unique
+  code        String?                 @unique
+  category    DiagnosticTestCategory
+  description String?
+  isActive    Boolean                 @default(true)
+  sortOrder   Int                     @default(0)
+  createdAt   DateTime                @default(now())
+  updatedAt   DateTime                @updatedAt
+
+  practitionerTypes PractitionerTypeDiagnosticTest[]
+
+  @@index([category])
+  @@map("diagnostic_tests")
+}
+
+model PractitionerTypeDiagnosticTest {
+  id                String           @id @default(uuid()) @db.Uuid
+  practitionerType  PractitionerType
+  diagnosticTestId  String           @db.Uuid
+  diagnosticTest    DiagnosticTest   @relation(fields: [diagnosticTestId], references: [id], onDelete: Cascade)
+  createdAt         DateTime         @default(now())
+
+  @@unique([practitionerType, diagnosticTestId])
+  @@index([practitionerType])
+  @@index([diagnosticTestId])
+  @@map("practitioner_type_diagnostic_tests")
+}

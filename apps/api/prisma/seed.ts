@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, PractitionerType, Gender, ServiceType, BookingStatus, PaymentStatus, PaymentMethod, ConsentType, DocumentType, NotificationChannel } from '@prisma/client';
+import { PrismaClient, UserRole, PractitionerType, Gender, ServiceType, BookingStatus, PaymentStatus, PaymentMethod, ConsentType, DocumentType, NotificationChannel, DiagnosticTestCategory } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -7,6 +7,8 @@ async function main() {
   console.log('Seeding database...');
 
   // Clean existing data
+  await prisma.practitionerTypeDiagnosticTest.deleteMany();
+  await prisma.diagnosticTest.deleteMany();
   await prisma.notification.deleteMany();
   await prisma.auditLog.deleteMany();
   await prisma.consentRecord.deleteMany();
@@ -618,6 +620,182 @@ async function main() {
   });
 
   console.log('Created audit logs');
+
+  // --- Diagnostic Tests ---
+  const diagnosticTests = [
+    // LAB_TEST (18)
+    { name: 'Full Blood Count (FBC)', code: 'FBC', category: DiagnosticTestCategory.LAB_TEST, description: 'Complete blood cell count including red cells, white cells, and platelets', sortOrder: 1 },
+    { name: 'Blood Glucose (Fasting)', code: 'GLU-F', category: DiagnosticTestCategory.LAB_TEST, description: 'Fasting blood sugar level measurement', sortOrder: 2 },
+    { name: 'Blood Glucose (Random)', code: 'GLU-R', category: DiagnosticTestCategory.LAB_TEST, description: 'Random blood sugar level measurement', sortOrder: 3 },
+    { name: 'HbA1c (Glycated Haemoglobin)', code: 'HBA1C', category: DiagnosticTestCategory.LAB_TEST, description: 'Average blood sugar control over 2-3 months', sortOrder: 4 },
+    { name: 'Lipid Profile', code: 'LIPID', category: DiagnosticTestCategory.LAB_TEST, description: 'Cholesterol, triglycerides, HDL, and LDL levels', sortOrder: 5 },
+    { name: 'Liver Function Tests (LFTs)', code: 'LFT', category: DiagnosticTestCategory.LAB_TEST, description: 'Assessment of liver enzyme levels and function', sortOrder: 6 },
+    { name: 'Renal Function Tests (RFTs)', code: 'RFT', category: DiagnosticTestCategory.LAB_TEST, description: 'Kidney function markers including creatinine and urea', sortOrder: 7 },
+    { name: 'Urinalysis', code: 'UA', category: DiagnosticTestCategory.LAB_TEST, description: 'Physical, chemical, and microscopic analysis of urine', sortOrder: 8 },
+    { name: 'Thyroid Function Tests (TFTs)', code: 'TFT', category: DiagnosticTestCategory.LAB_TEST, description: 'TSH, T3, and T4 thyroid hormone levels', sortOrder: 9 },
+    { name: 'Erythrocyte Sedimentation Rate (ESR)', code: 'ESR', category: DiagnosticTestCategory.LAB_TEST, description: 'Non-specific marker of inflammation', sortOrder: 10 },
+    { name: 'C-Reactive Protein (CRP)', code: 'CRP', category: DiagnosticTestCategory.LAB_TEST, description: 'Acute-phase inflammatory marker', sortOrder: 11 },
+    { name: 'Blood Group & Rh Factor', code: 'BG-RH', category: DiagnosticTestCategory.LAB_TEST, description: 'ABO blood grouping and Rhesus factor determination', sortOrder: 12 },
+    { name: 'CD4 Count', code: 'CD4', category: DiagnosticTestCategory.LAB_TEST, description: 'Immune cell count for HIV monitoring', sortOrder: 13 },
+    { name: 'Viral Load (HIV)', code: 'VL-HIV', category: DiagnosticTestCategory.LAB_TEST, description: 'Quantitative measurement of HIV RNA in blood', sortOrder: 14 },
+    { name: 'Sputum AFB (TB Smear)', code: 'AFB', category: DiagnosticTestCategory.LAB_TEST, description: 'Acid-fast bacilli smear for tuberculosis screening', sortOrder: 15 },
+    { name: 'Stool Microscopy', code: 'STOOL-M', category: DiagnosticTestCategory.LAB_TEST, description: 'Microscopic examination of stool for parasites and pathogens', sortOrder: 16 },
+    { name: 'Beta-hCG (Pregnancy)', code: 'BHCG', category: DiagnosticTestCategory.LAB_TEST, description: 'Quantitative pregnancy hormone level', sortOrder: 17 },
+    { name: 'Prostate-Specific Antigen (PSA)', code: 'PSA', category: DiagnosticTestCategory.LAB_TEST, description: 'Screening marker for prostate conditions', sortOrder: 18 },
+
+    // RAPID_TEST (10)
+    { name: 'Malaria RDT', code: 'MAL-RDT', category: DiagnosticTestCategory.RAPID_TEST, description: 'Rapid diagnostic test for malaria parasites', sortOrder: 1 },
+    { name: 'HIV Rapid Test', code: 'HIV-RT', category: DiagnosticTestCategory.RAPID_TEST, description: 'Point-of-care HIV antibody/antigen test', sortOrder: 2 },
+    { name: 'Hepatitis B Surface Antigen (HBsAg)', code: 'HBSAG-RT', category: DiagnosticTestCategory.RAPID_TEST, description: 'Rapid screening for hepatitis B infection', sortOrder: 3 },
+    { name: 'Hepatitis C Rapid Test', code: 'HCV-RT', category: DiagnosticTestCategory.RAPID_TEST, description: 'Rapid screening for hepatitis C antibodies', sortOrder: 4 },
+    { name: 'Syphilis RPR/VDRL', code: 'RPR', category: DiagnosticTestCategory.RAPID_TEST, description: 'Rapid plasma reagin test for syphilis screening', sortOrder: 5 },
+    { name: 'Glucose Finger-Prick', code: 'GLU-FP', category: DiagnosticTestCategory.RAPID_TEST, description: 'Point-of-care blood glucose using glucometer', sortOrder: 6 },
+    { name: 'Urine Pregnancy Test', code: 'UPT', category: DiagnosticTestCategory.RAPID_TEST, description: 'Qualitative urine hCG pregnancy detection', sortOrder: 7 },
+    { name: 'COVID-19 Antigen Test', code: 'COV-AG', category: DiagnosticTestCategory.RAPID_TEST, description: 'Rapid antigen test for SARS-CoV-2', sortOrder: 8 },
+    { name: 'Typhoid Widal Test', code: 'WIDAL', category: DiagnosticTestCategory.RAPID_TEST, description: 'Serological test for typhoid fever', sortOrder: 9 },
+    { name: 'HemoCue (Haemoglobin)', code: 'HEMO', category: DiagnosticTestCategory.RAPID_TEST, description: 'Point-of-care haemoglobin measurement', sortOrder: 10 },
+
+    // IMAGING (6)
+    { name: 'Chest X-Ray', code: 'CXR', category: DiagnosticTestCategory.IMAGING, description: 'Radiographic imaging of the chest and lungs', sortOrder: 1 },
+    { name: 'Abdominal Ultrasound', code: 'US-ABD', category: DiagnosticTestCategory.IMAGING, description: 'Ultrasound examination of abdominal organs', sortOrder: 2 },
+    { name: 'Obstetric Ultrasound', code: 'US-OBS', category: DiagnosticTestCategory.IMAGING, description: 'Prenatal ultrasound for fetal assessment', sortOrder: 3 },
+    { name: 'Pelvic Ultrasound', code: 'US-PEL', category: DiagnosticTestCategory.IMAGING, description: 'Ultrasound examination of pelvic organs', sortOrder: 4 },
+    { name: 'Musculoskeletal X-Ray', code: 'XR-MSK', category: DiagnosticTestCategory.IMAGING, description: 'X-ray imaging of bones and joints', sortOrder: 5 },
+    { name: 'ECG (Electrocardiogram)', code: 'ECG', category: DiagnosticTestCategory.IMAGING, description: 'Electrical activity recording of the heart', sortOrder: 6 },
+
+    // SWAB_CULTURE (8)
+    { name: 'Throat Swab & Culture', code: 'SW-THR', category: DiagnosticTestCategory.SWAB_CULTURE, description: 'Microbiological culture of throat specimen', sortOrder: 1 },
+    { name: 'Wound Swab & Culture', code: 'SW-WND', category: DiagnosticTestCategory.SWAB_CULTURE, description: 'Microbiological culture of wound specimen', sortOrder: 2 },
+    { name: 'Nasal Swab', code: 'SW-NAS', category: DiagnosticTestCategory.SWAB_CULTURE, description: 'Specimen collection from nasal passages', sortOrder: 3 },
+    { name: 'High Vaginal Swab (HVS)', code: 'HVS', category: DiagnosticTestCategory.SWAB_CULTURE, description: 'Vaginal specimen for infection screening', sortOrder: 4 },
+    { name: 'Urine Culture & Sensitivity', code: 'UC-S', category: DiagnosticTestCategory.SWAB_CULTURE, description: 'Urine culture with antibiotic sensitivity testing', sortOrder: 5 },
+    { name: 'Blood Culture', code: 'BC', category: DiagnosticTestCategory.SWAB_CULTURE, description: 'Blood specimen culture for bacteraemia detection', sortOrder: 6 },
+    { name: 'Ear Swab & Culture', code: 'SW-EAR', category: DiagnosticTestCategory.SWAB_CULTURE, description: 'Microbiological culture of ear specimen', sortOrder: 7 },
+    { name: 'Urethral Swab', code: 'SW-URE', category: DiagnosticTestCategory.SWAB_CULTURE, description: 'Urethral specimen for STI screening', sortOrder: 8 },
+
+    // SCREENING (9)
+    { name: 'Blood Pressure Measurement', code: 'BP', category: DiagnosticTestCategory.SCREENING, description: 'Systolic and diastolic blood pressure reading', sortOrder: 1 },
+    { name: 'BMI Assessment', code: 'BMI', category: DiagnosticTestCategory.SCREENING, description: 'Body Mass Index calculation and assessment', sortOrder: 2 },
+    { name: 'Visual Acuity Test', code: 'VA', category: DiagnosticTestCategory.SCREENING, description: 'Basic eyesight assessment using Snellen chart', sortOrder: 3 },
+    { name: 'Cervical Cancer Screening (VIA/VILI)', code: 'VIA', category: DiagnosticTestCategory.SCREENING, description: 'Visual inspection with acetic acid/Lugol\'s iodine', sortOrder: 4 },
+    { name: 'Clinical Breast Examination', code: 'CBE', category: DiagnosticTestCategory.SCREENING, description: 'Physical examination of breast tissue for abnormalities', sortOrder: 5 },
+    { name: 'Growth Monitoring (Paediatric)', code: 'GROWTH', category: DiagnosticTestCategory.SCREENING, description: 'Height, weight, and head circumference tracking for children', sortOrder: 6 },
+    { name: 'Developmental Milestones Assessment', code: 'DEV', category: DiagnosticTestCategory.SCREENING, description: 'Age-appropriate developmental screening for children', sortOrder: 7 },
+    { name: 'PHQ-9 Depression Screening', code: 'PHQ9', category: DiagnosticTestCategory.SCREENING, description: 'Patient Health Questionnaire for depression assessment', sortOrder: 8 },
+    { name: 'Pulse Oximetry', code: 'SPO2', category: DiagnosticTestCategory.SCREENING, description: 'Non-invasive blood oxygen saturation measurement', sortOrder: 9 },
+
+    // SPECIALIZED (6)
+    { name: 'GeneXpert MTB/RIF (TB PCR)', code: 'GENEX', category: DiagnosticTestCategory.SPECIALIZED, description: 'Molecular test for TB and rifampicin resistance', sortOrder: 1 },
+    { name: 'Pap Smear', code: 'PAP', category: DiagnosticTestCategory.SPECIALIZED, description: 'Cervical cytology for cancer screening', sortOrder: 2 },
+    { name: 'Spirometry', code: 'SPIRO', category: DiagnosticTestCategory.SPECIALIZED, description: 'Lung function testing measuring airflow', sortOrder: 3 },
+    { name: 'Audiometry', code: 'AUDIO', category: DiagnosticTestCategory.SPECIALIZED, description: 'Hearing assessment across frequency ranges', sortOrder: 4 },
+    { name: 'Peak Expiratory Flow', code: 'PEF', category: DiagnosticTestCategory.SPECIALIZED, description: 'Maximum speed of exhalation for asthma monitoring', sortOrder: 5 },
+    { name: 'INR / Coagulation Profile', code: 'INR', category: DiagnosticTestCategory.SPECIALIZED, description: 'Blood clotting time for anticoagulant therapy monitoring', sortOrder: 6 },
+  ];
+
+  const createdTests = await Promise.all(
+    diagnosticTests.map((test) =>
+      prisma.diagnosticTest.create({ data: test }),
+    ),
+  );
+
+  console.log(`Created ${createdTests.length} diagnostic tests`);
+
+  // Build a map of test code -> test id for easy reference
+  const testByCode: Record<string, string> = {};
+  for (const test of createdTests) {
+    if (test.code) testByCode[test.code] = test.id;
+  }
+
+  // All test codes for reference
+  const allTestCodes = Object.keys(testByCode);
+
+  const labTests = diagnosticTests.filter(t => t.category === DiagnosticTestCategory.LAB_TEST).map(t => t.code!);
+  const rapidTests = diagnosticTests.filter(t => t.category === DiagnosticTestCategory.RAPID_TEST).map(t => t.code!);
+  const imagingTests = diagnosticTests.filter(t => t.category === DiagnosticTestCategory.IMAGING).map(t => t.code!);
+  const swabTests = diagnosticTests.filter(t => t.category === DiagnosticTestCategory.SWAB_CULTURE).map(t => t.code!);
+  const screeningTests = diagnosticTests.filter(t => t.category === DiagnosticTestCategory.SCREENING).map(t => t.code!);
+  const specializedTests = diagnosticTests.filter(t => t.category === DiagnosticTestCategory.SPECIALIZED).map(t => t.code!);
+
+  // Practitioner type -> test code mappings
+  const practitionerTestMappings: Record<string, string[]> = {
+    // GP & Specialist: All tests
+    GENERAL_PRACTITIONER: allTestCodes,
+    SPECIALIST_DOCTOR: allTestCodes,
+
+    // Clinical Officer: All rapid, most lab, screening, swabs, basic imaging, some specialized
+    CLINICAL_OFFICER: [
+      ...rapidTests,
+      ...labTests,
+      ...screeningTests,
+      ...swabTests,
+      'CXR', 'US-ABD', 'US-PEL', 'ECG',
+      'GENEX', 'SPIRO', 'PEF', 'INR',
+    ],
+
+    // Registered Nurse: Rapid tests, screening, basic lab (sample collection), basic swabs, ECG
+    REGISTERED_NURSE: [
+      ...rapidTests,
+      ...screeningTests,
+      'FBC', 'GLU-F', 'GLU-R', 'UA', 'BG-RH', 'BHCG', 'ESR', 'CRP',
+      'SW-THR', 'SW-WND', 'SW-NAS', 'SW-EAR', 'UC-S',
+      'ECG',
+    ],
+
+    // Enrolled Nurse: Basic rapid tests, screening, urinalysis, wound swabs
+    ENROLLED_NURSE: [
+      'MAL-RDT', 'HIV-RT', 'GLU-FP', 'UPT', 'COV-AG', 'HEMO',
+      'BP', 'BMI', 'SPO2', 'GROWTH', 'DEV',
+      'UA',
+      'SW-WND',
+    ],
+
+    // Midwife: Obstetric-relevant tests
+    MIDWIFE: [
+      'MAL-RDT', 'HIV-RT', 'HBSAG-RT', 'HCV-RT', 'RPR', 'GLU-FP', 'UPT', 'HEMO',
+      'FBC', 'GLU-F', 'GLU-R', 'BG-RH', 'BHCG', 'UA',
+      'BP', 'BMI', 'VIA', 'CBE', 'GROWTH', 'DEV',
+      'HVS', 'UC-S',
+      'US-OBS', 'US-PEL',
+      'PAP',
+    ],
+
+    // Physiotherapist: BP, BMI, pulse oximetry, MSK X-ray, spirometry, peak flow
+    PHYSIOTHERAPIST: [
+      'BP', 'BMI', 'SPO2',
+      'XR-MSK',
+      'SPIRO', 'PEF',
+    ],
+
+    // Pharmacist: Point-of-care rapid tests, basic screening
+    PHARMACIST: [
+      'MAL-RDT', 'GLU-FP', 'UPT', 'COV-AG', 'HEMO',
+      'BP', 'BMI', 'SPO2',
+    ],
+  };
+
+  // Create junction records
+  const junctionData: Array<{ practitionerType: PractitionerType; diagnosticTestId: string }> = [];
+  for (const [typeStr, codes] of Object.entries(practitionerTestMappings)) {
+    const practType = typeStr as PractitionerType;
+    // Deduplicate codes
+    const uniqueCodes = [...new Set(codes)];
+    for (const code of uniqueCodes) {
+      if (testByCode[code]) {
+        junctionData.push({
+          practitionerType: practType,
+          diagnosticTestId: testByCode[code],
+        });
+      }
+    }
+  }
+
+  await prisma.practitionerTypeDiagnosticTest.createMany({
+    data: junctionData,
+    skipDuplicates: true,
+  });
+
+  console.log(`Created ${junctionData.length} practitioner-type test mappings`);
 
   console.log('\n--- Seed Complete ---');
   console.log('Login credentials for all users: Password123!');

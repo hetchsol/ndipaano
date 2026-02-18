@@ -297,6 +297,14 @@ export class SearchPractitionersDto {
   offersClinicVisits?: boolean;
 
   @ApiPropertyOptional({
+    description: 'Filter by diagnostic test ID (returns practitioners whose type supports this test)',
+    example: 'uuid-of-malaria-rdt',
+  })
+  @IsOptional()
+  @IsString()
+  diagnosticTestId?: string;
+
+  @ApiPropertyOptional({
     description: 'Page number (1-based)',
     example: 1,
     default: 1,

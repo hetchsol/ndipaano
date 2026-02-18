@@ -25,6 +25,7 @@ import {
   Mail,
   Building2,
   Home,
+  TestTube,
 } from 'lucide-react';
 
 interface PractitionerProfile {
@@ -47,6 +48,16 @@ interface PractitionerProfile {
   operatingCenterPhone?: string;
   offersHomeVisits: boolean;
   offersClinicVisits: boolean;
+  diagnosticTests?: Record<string, {
+    label: string;
+    tests: Array<{
+      id: string;
+      name: string;
+      code: string | null;
+      category: string;
+      description: string | null;
+    }>;
+  }>;
   user: {
     id: string;
     email?: string;
@@ -94,6 +105,7 @@ export default function PractitionerProfilePage() {
   const practitionerId = params.id as string;
   const [practitioner, setPractitioner] = useState<PractitionerProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTestCategory, setActiveTestCategory] = useState<string>('');
 
   useEffect(() => {
     async function fetchPractitioner() {
@@ -109,7 +121,13 @@ export default function PractitionerProfilePage() {
           if (reviewsRes.status === 'fulfilled') {
             reviews = reviewsRes.value.data.data?.data || reviewsRes.value.data.data?.reviews || [];
           }
-          setPractitioner({ ...profile, reviews });
+          const merged = { ...profile, reviews };
+          setPractitioner(merged);
+          // Set initial active diagnostic test category
+          if (merged.diagnosticTests) {
+            const cats = Object.keys(merged.diagnosticTests);
+            if (cats.length > 0) setActiveTestCategory(cats[0]);
+          }
         }
       } catch {
         // Handle error
@@ -286,6 +304,58 @@ export default function PractitionerProfilePage() {
                         </span>
                       ))}
                     </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Available Diagnostics & Tests */}
+              {practitioner.diagnosticTests && Object.keys(practitioner.diagnosticTests).length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <TestTube className="h-5 w-5 text-green-700" />
+                      Available Diagnostics & Tests
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {/* Category Tabs */}
+                    <div className="mb-4 flex flex-wrap gap-2">
+                      {Object.entries(practitioner.diagnosticTests).map(([category, group]) => (
+                        <button
+                          key={category}
+                          onClick={() => setActiveTestCategory(category)}
+                          className={`rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+                            activeTestCategory === category
+                              ? 'bg-green-700 text-white'
+                              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          }`}
+                        >
+                          {group.label} ({group.tests.length})
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Tests Grid */}
+                    {activeTestCategory && practitioner.diagnosticTests[activeTestCategory] && (
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        {practitioner.diagnosticTests[activeTestCategory].tests.map((test) => (
+                          <div
+                            key={test.id}
+                            className="rounded-lg border border-gray-100 p-3"
+                          >
+                            <div className="flex items-start gap-2">
+                              <TestTube className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
+                              <div>
+                                <p className="text-sm font-medium text-gray-900">{test.name}</p>
+                                {test.description && (
+                                  <p className="mt-0.5 text-xs text-gray-500">{test.description}</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}

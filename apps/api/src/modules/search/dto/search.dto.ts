@@ -6,6 +6,7 @@ import {
   Min,
   Max,
   MaxLength,
+  IsUUID,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
@@ -103,6 +104,13 @@ export class SearchPractitionersDto {
   @IsOptional()
   @IsEnum(Gender)
   gender?: Gender;
+
+  @ApiPropertyOptional({
+    description: 'Filter by diagnostic test ID (returns practitioners whose type supports this test)',
+  })
+  @IsOptional()
+  @IsString()
+  diagnosticTestId?: string;
 
   @ApiPropertyOptional({
     description: 'Sort results by',

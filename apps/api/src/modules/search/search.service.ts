@@ -24,6 +24,7 @@ export class SearchService {
       language,
       specialization,
       gender,
+      diagnosticTestId,
       sortBy,
       page = 1,
       limit = 20,
@@ -78,6 +79,16 @@ export class SearchService {
         SELECT 1 FROM patient_profiles pat WHERE pat."userId" = u."id" AND pat."gender" = $${paramIndex}::text::"Gender"
       )`);
       params.push(gender);
+      paramIndex++;
+    }
+
+    if (query.diagnosticTestId) {
+      conditions.push(`EXISTS (
+        SELECT 1 FROM practitioner_type_diagnostic_tests ptdt
+        WHERE ptdt."practitionerType"::text = pp."practitionerType"::text
+          AND ptdt."diagnosticTestId" = $${paramIndex}::uuid
+      )`);
+      params.push(query.diagnosticTestId);
       paramIndex++;
     }
 

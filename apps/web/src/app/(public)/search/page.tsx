@@ -3,7 +3,7 @@
 import React, { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { practitionersAPI } from '../../../lib/api';
+import { practitionersAPI, diagnosticTestsAPI } from '../../../lib/api';
 import { formatCurrency } from '../../../lib/utils';
 import { Header } from '../../../components/layout/header';
 import { Footer } from '../../../components/layout/footer';
@@ -24,6 +24,7 @@ import {
   Mail,
   Building2,
   Home,
+  TestTube,
 } from 'lucide-react';
 
 interface Practitioner {
@@ -61,6 +62,22 @@ interface Practitioner {
   email?: string;
   phone?: string;
 }
+
+interface DiagnosticTest {
+  id: string;
+  name: string;
+  code: string | null;
+  category: string;
+}
+
+const categoryLabels: Record<string, string> = {
+  LAB_TEST: 'Lab Tests',
+  RAPID_TEST: 'Rapid Tests',
+  IMAGING: 'Imaging',
+  SWAB_CULTURE: 'Swabs & Cultures',
+  SCREENING: 'Screening',
+  SPECIALIZED: 'Specialized',
+};
 
 const practitionerTypes = [
   { value: '', label: 'All Types' },
@@ -130,10 +147,22 @@ function SearchPageContent() {
   const [type, setType] = useState(searchParams.get('type') || '');
   const [distance, setDistance] = useState('25');
   const [minRating, setMinRating] = useState('');
+  const [selectedTestId, setSelectedTestId] = useState('');
+  const [diagnosticTests, setDiagnosticTests] = useState<DiagnosticTest[]>([]);
 
   useEffect(() => {
     fetchPractitioners();
+    fetchDiagnosticTests();
   }, []);
+
+  async function fetchDiagnosticTests() {
+    try {
+      const response = await diagnosticTestsAPI.search({ limit: 100 });
+      setDiagnosticTests(response.data.data || []);
+    } catch {
+      setDiagnosticTests([]);
+    }
+  }
 
   async function fetchPractitioners() {
     setIsLoading(true);
@@ -141,6 +170,7 @@ function SearchPageContent() {
       const response = await practitionersAPI.search({
         practitionerType: type || undefined,
         minRating: minRating ? parseInt(minRating) : undefined,
+        diagnosticTestId: selectedTestId || undefined,
         isAvailable: true,
         limit: 24,
       });
@@ -182,7 +212,7 @@ function SearchPageContent() {
             </p>
 
             <form onSubmit={handleSearch} className="mt-6">
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 {/* Type Dropdown */}
                 <Select
                   label="Practitioner Type"
@@ -190,6 +220,35 @@ function SearchPageContent() {
                   value={type}
                   onChange={(e) => setType(e.target.value)}
                 />
+
+                {/* Test / Diagnostic Dropdown */}
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                    Test / Diagnostic
+                  </label>
+                  <select
+                    value={selectedTestId}
+                    onChange={(e) => setSelectedTestId(e.target.value)}
+                    className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-green-500 focus:outline-none focus:ring-1 focus:ring-green-500"
+                  >
+                    <option value="">All Tests</option>
+                    {Object.entries(
+                      diagnosticTests.reduce<Record<string, DiagnosticTest[]>>((acc, test) => {
+                        if (!acc[test.category]) acc[test.category] = [];
+                        acc[test.category].push(test);
+                        return acc;
+                      }, {})
+                    ).map(([category, tests]) => (
+                      <optgroup key={category} label={categoryLabels[category] || category}>
+                        {tests.map((test) => (
+                          <option key={test.id} value={test.id}>
+                            {test.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                </div>
 
                 {/* Distance Slider */}
                 <div>
@@ -425,6 +484,7 @@ function SearchPageContent() {
                   setType('');
                   setDistance('25');
                   setMinRating('');
+                  setSelectedTestId('');
                   fetchPractitioners();
                 }}
               >
