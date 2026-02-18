@@ -30,7 +30,9 @@ const patientSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address').optional().or(z.literal('')),
-  phone: z.string().min(10, 'Please enter a valid Zambian phone number'),
+  phone: z.string()
+    .min(1, 'Phone number is required')
+    .regex(/^\+260[0-9]{9}$/, 'Phone must be in format +260XXXXXXXXX (e.g. +260971234567)'),
   sex: z.string().min(1, 'Please select your sex'),
   dateOfBirth: z.string().min(1, 'Date of birth is required'),
   nationality: z.string().min(1, 'Nationality is required'),
@@ -39,7 +41,9 @@ const patientSchema = z.object({
     .string()
     .min(8, 'Password must be at least 8 characters')
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
   confirmPassword: z.string(),
   consentDataProcessing: z.boolean().refine((val) => val === true, {
     message: 'You must consent to data processing to register',
@@ -79,12 +83,16 @@ const practitionerSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
   lastName: z.string().min(2, 'Last name must be at least 2 characters'),
   email: z.string().email('Please enter a valid email address'),
-  phone: z.string().min(10, 'Please enter a valid Zambian phone number'),
+  phone: z.string()
+    .min(1, 'Phone number is required')
+    .regex(/^\+260[0-9]{9}$/, 'Phone must be in format +260XXXXXXXXX (e.g. +260971234567)'),
   password: z
     .string()
     .min(8, 'Password must be at least 8 characters')
     .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number'),
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
   confirmPassword: z.string(),
   practitionerType: z.string().min(1, 'Please select your profession type'),
   licenseNumber: z.string().min(1, 'License number is required'),
@@ -252,7 +260,7 @@ export default function RegisterPage() {
             <Input
               label="Phone Number"
               type="tel"
-              placeholder="+260 97X XXX XXX"
+              placeholder="+260971234567"
               error={patientForm.formState.errors.phone?.message}
               {...patientForm.register('phone')}
             />
@@ -421,7 +429,7 @@ export default function RegisterPage() {
             <Input
               label="Phone Number"
               type="tel"
-              placeholder="+260 97X XXX XXX"
+              placeholder="+260971234567"
               error={practitionerForm.formState.errors.phone?.message}
               {...practitionerForm.register('phone')}
             />
