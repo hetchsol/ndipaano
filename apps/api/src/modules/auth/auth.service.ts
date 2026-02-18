@@ -361,6 +361,11 @@ export class AuthService {
         isEmailVerified: true,
         twoFactorEnabled: true,
         createdAt: true,
+        patientProfile: {
+          select: {
+            memberId: true,
+          },
+        },
         practitionerProfile: {
           select: {
             practitionerType: true,

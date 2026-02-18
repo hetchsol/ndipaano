@@ -106,6 +106,18 @@ export function Header() {
                           <p className="mt-1 text-xs capitalize text-primary-700">
                             {user?.role}
                           </p>
+                          {(() => {
+                            const displayId =
+                              user?.memberId ||
+                              user?.patientProfile?.memberId ||
+                              user?.practitionerProfile?.hpczRegistrationNumber ||
+                              user?.practitionerProfile?.licenseNumber;
+                            return displayId ? (
+                              <p className="mt-1 rounded bg-gray-100 px-2 py-0.5 text-xs font-mono text-gray-600">
+                                ID: {displayId}
+                              </p>
+                            ) : null;
+                          })()}
                         </div>
                         <Link
                           href={getDashboardLink()}

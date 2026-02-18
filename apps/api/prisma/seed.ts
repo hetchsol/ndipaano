@@ -63,6 +63,7 @@ async function main() {
       isActive: true,
       patientProfile: {
         create: {
+          memberId: 'NDP-PAT-2024-0001',
           dateOfBirth: new Date('1990-05-15'),
           gender: Gender.FEMALE,
           bloodType: 'O_POSITIVE',
@@ -91,6 +92,7 @@ async function main() {
       isActive: true,
       patientProfile: {
         create: {
+          memberId: 'NDP-PAT-2024-0002',
           dateOfBirth: new Date('1985-08-22'),
           gender: Gender.MALE,
           bloodType: 'A_POSITIVE',

@@ -14,9 +14,15 @@ export interface User {
   isVerified: boolean;
   twoFactorEnabled: boolean;
   createdAt: string;
+  memberId?: string;
+  patientProfile?: {
+    memberId: string;
+  };
   practitionerProfile?: {
     type: string;
+    practitionerType?: string;
     licenseNumber: string;
+    hpczRegistrationNumber?: string;
     verificationStatus: 'pending' | 'verified' | 'rejected';
     rating: number;
     totalReviews: number;
