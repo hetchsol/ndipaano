@@ -113,7 +113,7 @@ export default function LandingPage() {
               <Heart className="h-4 w-4" />
               <span>Trusted by thousands across Zambia</span>
             </div>
-            <h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
+            <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl xl:text-6xl">
               Healthcare at Your{' '}
               <span className="text-secondary-400">Doorstep</span>
             </h1>
@@ -158,11 +158,11 @@ export default function LandingPage() {
       {/* Stats Section */}
       <section className="border-b border-gray-100 bg-white py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 sm:gap-8 md:grid-cols-4">
             {stats.map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="flex items-center justify-center gap-1">
-                  <span className="text-3xl font-bold text-primary-700">
+                  <span className="text-2xl font-bold text-primary-700 sm:text-3xl">
                     {stat.value}
                   </span>
                   {stat.icon && <stat.icon className="h-5 w-5 text-secondary-500" />}
@@ -191,7 +191,7 @@ export default function LandingPage() {
               <Link
                 key={feature.title}
                 href={feature.href}
-                className="group cursor-pointer rounded-xl border border-gray-200 bg-white p-6 shadow-card transition-all hover:shadow-card-hover hover:border-primary-200"
+                className="group cursor-pointer rounded-xl border border-gray-200 bg-white p-6 shadow-card transition-all hover:shadow-card-hover hover:border-primary-200 active:scale-[0.98] focus:ring-2 focus:ring-primary-300 focus:outline-none"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-50 text-primary-700 group-hover:bg-primary-700 group-hover:text-white transition-colors">
@@ -229,9 +229,9 @@ export default function LandingPage() {
                 {index < steps.length - 1 && (
                   <div className="absolute left-1/2 top-12 hidden h-0.5 w-full bg-gray-200 md:block" />
                 )}
-                <div className="relative mx-auto flex h-24 w-24 items-center justify-center">
+                <div className="relative mx-auto flex h-20 w-20 items-center justify-center sm:h-24 sm:w-24">
                   <div className="absolute inset-0 rounded-full bg-primary-50" />
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-full bg-primary-700">
+                  <div className="relative flex h-14 w-14 items-center justify-center rounded-full bg-primary-700 sm:h-16 sm:w-16">
                     <step.icon className="h-8 w-8 text-white" />
                   </div>
                 </div>
@@ -253,7 +253,7 @@ export default function LandingPage() {
       {/* Trust Section */}
       <section className="bg-primary-700 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-6 sm:gap-8 md:grid-cols-3">
             <div className="flex items-start gap-4">
               <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-white/10">
                 <ShieldCheck className="h-5 w-5 text-white" />

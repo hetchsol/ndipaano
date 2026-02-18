@@ -69,7 +69,7 @@ export function Header() {
                 {/* Notifications */}
                 <Link
                   href={getDashboardLink()}
-                  className="relative rounded-full p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                  className="relative rounded-full p-2.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
                 >
                   <Bell className="h-5 w-5" />
                   {unreadCount > 0 && (
@@ -83,7 +83,7 @@ export function Header() {
                 <div className="relative">
                   <button
                     onClick={() => setUserMenuOpen(!userMenuOpen)}
-                    className="flex items-center gap-2 rounded-full p-1 hover:bg-gray-100"
+                    className="flex items-center gap-2 rounded-full p-1.5 hover:bg-gray-100"
                   >
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-700 text-xs font-semibold text-white">
                       {user ? getInitials(`${user.firstName} ${user.lastName}`) : '?'}
@@ -97,7 +97,7 @@ export function Header() {
                         className="fixed inset-0 z-10"
                         onClick={() => setUserMenuOpen(false)}
                       />
-                      <div className="absolute right-0 z-20 mt-2 w-56 rounded-md border border-gray-200 bg-white py-1 shadow-lg">
+                      <div className="absolute right-0 z-20 mt-2 w-56 max-w-[calc(100vw-2rem)] rounded-md border border-gray-200 bg-white py-1 shadow-lg">
                         <div className="border-b border-gray-100 px-4 py-3">
                           <p className="text-sm font-medium text-gray-900">
                             {user?.firstName} {user?.lastName}
@@ -109,7 +109,7 @@ export function Header() {
                         </div>
                         <Link
                           href={getDashboardLink()}
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                           onClick={() => setUserMenuOpen(false)}
                         >
                           <User className="h-4 w-4" />
@@ -117,7 +117,7 @@ export function Header() {
                         </Link>
                         <Link
                           href="/consent"
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                           onClick={() => setUserMenuOpen(false)}
                         >
                           <Settings className="h-4 w-4" />
@@ -125,7 +125,7 @@ export function Header() {
                         </Link>
                         <Link
                           href="/patient/rates"
-                          className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                          className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50"
                           onClick={() => setUserMenuOpen(false)}
                         >
                           <CreditCard className="h-4 w-4" />
@@ -136,7 +136,7 @@ export function Header() {
                             setUserMenuOpen(false);
                             logout();
                           }}
-                          className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                          className="flex w-full items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
                         >
                           <LogOut className="h-4 w-4" />
                           Sign Out
@@ -162,7 +162,7 @@ export function Header() {
 
           {/* Mobile Menu Toggle */}
           <button
-            className="md:hidden rounded-md p-2 text-gray-500 hover:bg-gray-100"
+            className="md:hidden rounded-md p-2.5 text-gray-500 hover:bg-gray-100"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -176,14 +176,14 @@ export function Header() {
           <div className="space-y-1 px-4 py-4">
             <Link
               href="/search"
-              className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="block rounded-md px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
               onClick={() => setMobileMenuOpen(false)}
             >
               Find Practitioners
             </Link>
             <Link
               href="/consent"
-              className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="block rounded-md px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
               onClick={() => setMobileMenuOpen(false)}
             >
               Privacy
@@ -192,14 +192,14 @@ export function Header() {
               <>
                 <Link
                   href={getDashboardLink()}
-                  className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="block rounded-md px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Dashboard
                 </Link>
                 <Link
                   href="/patient/rates"
-                  className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="block rounded-md px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Rates
@@ -209,7 +209,7 @@ export function Header() {
                     setMobileMenuOpen(false);
                     logout();
                   }}
-                  className="block w-full rounded-md px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50"
+                  className="block w-full rounded-md px-3 py-3 text-left text-sm font-medium text-red-600 hover:bg-red-50"
                 >
                   Sign Out
                 </button>
@@ -218,14 +218,14 @@ export function Header() {
               <>
                 <Link
                   href="/login"
-                  className="block rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="block rounded-md px-3 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/register"
-                  className="block rounded-md bg-primary-700 px-3 py-2 text-sm font-medium text-white"
+                  className="block rounded-md bg-primary-700 px-3 py-3 text-sm font-medium text-white"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Get Started

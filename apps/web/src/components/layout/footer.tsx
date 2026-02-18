@@ -6,7 +6,7 @@ export function Footer() {
   return (
     <footer className="border-t border-gray-200 bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+        <div className="grid grid-cols-2 gap-6 sm:gap-8 md:grid-cols-4">
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2">
@@ -24,29 +24,29 @@ export function Footer() {
           {/* For Patients */}
           <div>
             <h3 className="text-sm font-semibold text-gray-900">For Patients</h3>
-            <ul className="mt-4 space-y-2">
+            <ul className="mt-4 space-y-1">
               <li>
-                <Link href="/search" className="text-sm text-gray-500 hover:text-primary-700">
+                <Link href="/search" className="inline-block py-1 text-sm text-gray-500 hover:text-primary-700">
                   Find Practitioners
                 </Link>
               </li>
               <li>
-                <Link href="/register" className="text-sm text-gray-500 hover:text-primary-700">
+                <Link href="/register" className="inline-block py-1 text-sm text-gray-500 hover:text-primary-700">
                   Create Account
                 </Link>
               </li>
               <li>
-                <Link href="/consent" className="text-sm text-gray-500 hover:text-primary-700">
+                <Link href="/consent" className="inline-block py-1 text-sm text-gray-500 hover:text-primary-700">
                   Manage Consent
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="text-sm text-gray-500 hover:text-primary-700">
+                <Link href="/login" className="inline-block py-1 text-sm text-gray-500 hover:text-primary-700">
                   Service Rates
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-sm text-gray-500 hover:text-primary-700">
+                <Link href="#" className="inline-block py-1 text-sm text-gray-500 hover:text-primary-700">
                   Emergency Services
                 </Link>
               </li>
@@ -56,24 +56,24 @@ export function Footer() {
           {/* For Practitioners */}
           <div>
             <h3 className="text-sm font-semibold text-gray-900">For Practitioners</h3>
-            <ul className="mt-4 space-y-2">
+            <ul className="mt-4 space-y-1">
               <li>
-                <Link href="/register" className="text-sm text-gray-500 hover:text-primary-700">
+                <Link href="/register" className="inline-block py-1 text-sm text-gray-500 hover:text-primary-700">
                   Join as Practitioner
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-sm text-gray-500 hover:text-primary-700">
+                <Link href="#" className="inline-block py-1 text-sm text-gray-500 hover:text-primary-700">
                   Verification Process
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-sm text-gray-500 hover:text-primary-700">
+                <Link href="#" className="inline-block py-1 text-sm text-gray-500 hover:text-primary-700">
                   Practitioner Guidelines
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-sm text-gray-500 hover:text-primary-700">
+                <Link href="#" className="inline-block py-1 text-sm text-gray-500 hover:text-primary-700">
                   Earnings & Payouts
                 </Link>
               </li>
@@ -83,24 +83,24 @@ export function Footer() {
           {/* Legal */}
           <div>
             <h3 className="text-sm font-semibold text-gray-900">Legal & Support</h3>
-            <ul className="mt-4 space-y-2">
+            <ul className="mt-4 space-y-1">
               <li>
-                <Link href="/consent" className="text-sm text-gray-500 hover:text-primary-700">
+                <Link href="/consent" className="inline-block py-1 text-sm text-gray-500 hover:text-primary-700">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-sm text-gray-500 hover:text-primary-700">
+                <Link href="#" className="inline-block py-1 text-sm text-gray-500 hover:text-primary-700">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="#" className="text-sm text-gray-500 hover:text-primary-700">
+                <Link href="#" className="inline-block py-1 text-sm text-gray-500 hover:text-primary-700">
                   DPA Compliance
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="text-sm text-gray-500 hover:text-primary-700">
+                <Link href="/login" className="inline-block py-1 text-sm text-gray-500 hover:text-primary-700">
                   Contact Support
                 </Link>
               </li>

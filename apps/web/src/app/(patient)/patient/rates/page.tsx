@@ -142,7 +142,7 @@ export default function RatesPage() {
       </div>
 
       {/* Info Banner */}
-      <div className="mb-8 flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
+      <div className="mb-8 flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 sm:p-4">
         <Info className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
         <div className="text-sm text-blue-800">
           <p className="font-medium">Rates are indicative</p>
@@ -155,11 +155,11 @@ export default function RatesPage() {
       </div>
 
       {/* Rates Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {serviceRates.map((service) => (
           <div
             key={service.key}
-            className="rounded-lg border border-gray-200 bg-white p-5 transition-all hover:border-primary-200 hover:shadow-sm"
+            className="rounded-lg border border-gray-200 bg-white p-5 transition-all hover:border-primary-200 hover:shadow-sm active:bg-gray-50"
           >
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary-50 text-primary-700">

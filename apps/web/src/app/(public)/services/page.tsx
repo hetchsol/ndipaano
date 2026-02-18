@@ -153,11 +153,11 @@ export default function ServicesPage() {
       {/* Services Grid */}
       <section className="bg-gray-50 py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {services.map((service) => (
               <div
                 key={service.key}
-                className="group rounded-xl border border-gray-200 bg-white p-6 shadow-card transition-all hover:shadow-card-hover hover:border-primary-200"
+                className="group rounded-xl border border-gray-200 bg-white p-6 shadow-card transition-all hover:shadow-card-hover hover:border-primary-200 active:scale-[0.98]"
               >
                 <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-50 text-primary-700 group-hover:bg-primary-700 group-hover:text-white transition-colors">
                   <service.icon className="h-6 w-6" />
@@ -170,7 +170,7 @@ export default function ServicesPage() {
                 </p>
                 <div className="mt-4">
                   <Link href="/register">
-                    <Button variant="outline" size="sm" className="group-hover:border-primary-700 group-hover:text-primary-700">
+                    <Button variant="outline" className="group-hover:border-primary-700 group-hover:text-primary-700">
                       Book Now
                       <ArrowRight className="ml-1 h-3 w-3" />
                     </Button>
