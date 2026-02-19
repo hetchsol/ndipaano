@@ -41,7 +41,7 @@ export default function PatientTelehealthSessionsPage() {
     async function fetchSessions() {
       try {
         const res = await telehealthAPI.getMySessions({ limit: 50 });
-        setSessions(res.data.data || []);
+        setSessions(res.data.data?.data || res.data.data || []);
       } catch {
         // ignore
       } finally {
