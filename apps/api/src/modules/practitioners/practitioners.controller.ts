@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Put,
   Patch,
   Post,
   Delete,
@@ -27,6 +28,8 @@ import {
   SearchPractitionersDto,
   VerifyDocumentDto,
   UpdateLocationDto,
+  CreateOperatingCenterDto,
+  UpdateOperatingCenterDto,
 } from './dto/practitioner.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -185,6 +188,84 @@ export class PractitionersController {
     @Body() dto: UpdateLocationDto,
   ) {
     return this.practitionersService.updateLocation(userId, dto);
+  }
+
+  // ---- Operating Centers ---------------------------------------------------
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...PRACTITIONER_ROLES)
+  @Get('operating-centers')
+  @ApiOperation({ summary: 'List own operating centers' })
+  @ApiResponse({
+    status: 200,
+    description: 'Operating centers retrieved successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Practitioner role required' })
+  async getOperatingCenters(@CurrentUser('id') userId: string) {
+    return this.practitionersService.getOperatingCenters(userId);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...PRACTITIONER_ROLES)
+  @Post('operating-centers')
+  @ApiOperation({ summary: 'Add an operating center' })
+  @ApiResponse({
+    status: 201,
+    description: 'Operating center created successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Practitioner role required' })
+  async createOperatingCenter(
+    @CurrentUser('id') userId: string,
+    @Body() dto: CreateOperatingCenterDto,
+  ) {
+    return this.practitionersService.createOperatingCenter(userId, dto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...PRACTITIONER_ROLES)
+  @Put('operating-centers/:centerId')
+  @ApiOperation({ summary: 'Update an operating center' })
+  @ApiParam({ name: 'centerId', description: 'Operating center UUID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Operating center updated successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Invalid input' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Operating center not found' })
+  async updateOperatingCenter(
+    @CurrentUser('id') userId: string,
+    @Param('centerId', ParseUUIDPipe) centerId: string,
+    @Body() dto: UpdateOperatingCenterDto,
+  ) {
+    return this.practitionersService.updateOperatingCenter(userId, centerId, dto);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(...PRACTITIONER_ROLES)
+  @Delete('operating-centers/:centerId')
+  @ApiOperation({ summary: 'Delete an operating center' })
+  @ApiParam({ name: 'centerId', description: 'Operating center UUID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Operating center deleted successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Operating center not found' })
+  async deleteOperatingCenter(
+    @CurrentUser('id') userId: string,
+    @Param('centerId', ParseUUIDPipe) centerId: string,
+  ) {
+    return this.practitionersService.deleteOperatingCenter(userId, centerId);
   }
 
   // ---- Admin static routes ------------------------------------------------

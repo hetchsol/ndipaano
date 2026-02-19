@@ -48,6 +48,13 @@ interface PractitionerProfile {
   operatingCenterPhone?: string;
   offersHomeVisits: boolean;
   offersClinicVisits: boolean;
+  operatingCenters?: Array<{
+    id: string;
+    name: string;
+    address: string;
+    city: string;
+    phone?: string;
+  }>;
   diagnosticTests?: Record<string, {
     label: string;
     tests: Array<{
@@ -253,7 +260,7 @@ export default function PractitionerProfilePage() {
               <div className="flex flex-wrap gap-4 text-sm text-gray-600">
                 <span className="flex items-center gap-1">
                   <MapPin className="h-4 w-4 text-gray-400" />
-                  {practitioner.operatingCenterCity || 'Lusaka'}, Zambia
+                  {practitioner.operatingCenters?.[0]?.city || practitioner.operatingCenterCity || 'Lusaka'}, Zambia
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="h-4 w-4 text-gray-400" />
@@ -557,8 +564,48 @@ export default function PractitionerProfilePage() {
                 </CardContent>
               </Card>
 
-              {/* Operating Center */}
-              {practitioner.offersClinicVisits && practitioner.operatingCenterName && (
+              {/* Operating Centers */}
+              {practitioner.offersClinicVisits &&
+                practitioner.operatingCenters &&
+                practitioner.operatingCenters.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>
+                      {practitioner.operatingCenters.length === 1
+                        ? 'Operating Center'
+                        : 'Operating Centers'}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {practitioner.operatingCenters.map((center) => (
+                      <div key={center.id} className="space-y-2">
+                        <div className="flex items-start gap-2">
+                          <Building2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
+                          <div className="text-sm text-gray-700">
+                            <p className="font-medium">{center.name}</p>
+                            <p>{center.address}</p>
+                            <p>{center.city}</p>
+                          </div>
+                        </div>
+                        {center.phone && (
+                          <a
+                            href={`tel:${center.phone}`}
+                            className="flex items-center gap-2 text-sm text-gray-700 hover:text-green-700"
+                          >
+                            <Phone className="h-4 w-4 text-gray-400" />
+                            {center.phone}
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Fallback: legacy single operating center */}
+              {practitioner.offersClinicVisits &&
+                (!practitioner.operatingCenters || practitioner.operatingCenters.length === 0) &&
+                practitioner.operatingCenterName && (
                 <Card>
                   <CardHeader>
                     <CardTitle>Operating Center</CardTitle>

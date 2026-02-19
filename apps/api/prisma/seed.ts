@@ -24,6 +24,7 @@ async function main() {
   await prisma.medicalRecord.deleteMany();
   await prisma.bookingTracking.deleteMany();
   await prisma.booking.deleteMany();
+  await prisma.operatingCenter.deleteMany();
   await prisma.practitionerDocument.deleteMany();
   await prisma.familyMember.deleteMany();
   await prisma.emergencyContact.deleteMany();
@@ -140,6 +141,8 @@ async function main() {
           ratingCount: 127,
           latitude: -15.4167,
           longitude: 28.2833,
+          offersHomeVisits: true,
+          offersClinicVisits: true,
         },
       },
     },
@@ -171,6 +174,8 @@ async function main() {
           ratingCount: 89,
           latitude: -15.3875,
           longitude: 28.3228,
+          offersHomeVisits: true,
+          offersClinicVisits: true,
         },
       },
     },
@@ -295,6 +300,46 @@ async function main() {
   }
 
   console.log('Created practitioner documents');
+
+  // --- Operating Centers ---
+  const nurseProfile = await prisma.practitionerProfile.findUnique({
+    where: { userId: nurse1.id },
+  });
+
+  if (doctorProfile) {
+    await prisma.operatingCenter.createMany({
+      data: [
+        {
+          practitionerProfileId: doctorProfile.id,
+          name: 'Lusaka Medical Centre',
+          address: '123 Cairo Road',
+          city: 'Lusaka',
+          phone: '+260211234567',
+        },
+        {
+          practitionerProfileId: doctorProfile.id,
+          name: 'Kabulonga Health Clinic',
+          address: '45 Kabulonga Road, Kabulonga',
+          city: 'Lusaka',
+          phone: '+260211345678',
+        },
+      ],
+    });
+  }
+
+  if (nurseProfile) {
+    await prisma.operatingCenter.create({
+      data: {
+        practitionerProfileId: nurseProfile.id,
+        name: 'Chelstone Community Health Post',
+        address: '78 Chelstone Main Road',
+        city: 'Lusaka',
+        phone: '+260211456789',
+      },
+    });
+  }
+
+  console.log('Created operating centers');
 
   // --- Pharmacies ---
   const pharmacy1 = await prisma.pharmacy.create({

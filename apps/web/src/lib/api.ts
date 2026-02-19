@@ -195,6 +195,18 @@ export const practitionersAPI = {
     api.post('/practitioners/documents', data, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
+
+  getOperatingCenters: () =>
+    api.get('/practitioners/operating-centers'),
+
+  createOperatingCenter: (data: { name: string; address: string; city: string; phone?: string }) =>
+    api.post('/practitioners/operating-centers', data),
+
+  updateOperatingCenter: (id: string, data: { name?: string; address?: string; city?: string; phone?: string }) =>
+    api.put(`/practitioners/operating-centers/${id}`, data),
+
+  deleteOperatingCenter: (id: string) =>
+    api.delete(`/practitioners/operating-centers/${id}`),
 };
 
 // --- Medical Records API ---

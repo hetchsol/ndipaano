@@ -361,3 +361,79 @@ export class UpdateLocationDto {
   @IsNumber()
   longitude: number;
 }
+
+export class CreateOperatingCenterDto {
+  @ApiProperty({
+    description: 'Operating center / clinic name',
+    example: 'Lusaka Medical Centre',
+  })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  name: string;
+
+  @ApiProperty({
+    description: 'Street address',
+    example: '123 Cairo Road',
+  })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(500)
+  address: string;
+
+  @ApiProperty({
+    description: 'City',
+    example: 'Lusaka',
+  })
+  @IsString()
+  @MinLength(1)
+  @MaxLength(100)
+  city: string;
+
+  @ApiPropertyOptional({
+    description: 'Phone number',
+    example: '+260211123456',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  phone?: string;
+}
+
+export class UpdateOperatingCenterDto {
+  @ApiPropertyOptional({
+    description: 'Operating center / clinic name',
+    example: 'Lusaka Medical Centre',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  name?: string;
+
+  @ApiPropertyOptional({
+    description: 'Street address',
+    example: '123 Cairo Road',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  address?: string;
+
+  @ApiPropertyOptional({
+    description: 'City',
+    example: 'Lusaka',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  city?: string;
+
+  @ApiPropertyOptional({
+    description: 'Phone number',
+    example: '+260211123456',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  phone?: string;
+}

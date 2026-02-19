@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../../hooks/use-auth';
 import { practitionersAPI, usersAPI } from '../../../../lib/api';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '../../../../components/ui/card';
@@ -31,6 +31,7 @@ import {
   AlertCircle,
   Home,
   Building2,
+  Trash2,
 } from 'lucide-react';
 
 interface DocumentItem {
@@ -39,6 +40,24 @@ interface DocumentItem {
   fileName: string;
   status: 'pending' | 'verified' | 'rejected';
   uploadedAt: string;
+}
+
+interface OperatingCenter {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  phone?: string;
+}
+
+interface CenterFormState {
+  id?: string;
+  name: string;
+  address: string;
+  city: string;
+  phone: string;
+  isSaving: boolean;
+  isNew: boolean;
 }
 
 export default function PractitionerProfilePage() {
@@ -57,17 +76,45 @@ export default function PractitionerProfilePage() {
     user?.practitionerProfile?.consultationFee?.toString() || ''
   );
 
-  // Operating center & visit modes
+  // Visit modes
   const [offersHomeVisits, setOffersHomeVisits] = useState(true);
   const [offersClinicVisits, setOffersClinicVisits] = useState(false);
-  const [operatingCenterName, setOperatingCenterName] = useState('');
-  const [operatingCenterAddress, setOperatingCenterAddress] = useState('');
-  const [operatingCenterCity, setOperatingCenterCity] = useState('');
-  const [operatingCenterPhone, setOperatingCenterPhone] = useState('');
+
+  // Operating centers (multiple)
+  const [operatingCenters, setOperatingCenters] = useState<CenterFormState[]>([]);
+  const [isLoadingCenters, setIsLoadingCenters] = useState(false);
 
   // Document upload
   const [docType, setDocType] = useState('hpcz_license');
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
+
+  // Load operating centers
+  const loadOperatingCenters = useCallback(async () => {
+    setIsLoadingCenters(true);
+    try {
+      const response = await practitionersAPI.getOperatingCenters();
+      const centers: OperatingCenter[] = response.data.data || response.data || [];
+      setOperatingCenters(
+        centers.map((c) => ({
+          id: c.id,
+          name: c.name,
+          address: c.address,
+          city: c.city,
+          phone: c.phone || '',
+          isSaving: false,
+          isNew: false,
+        }))
+      );
+    } catch {
+      // Silently fail on initial load
+    } finally {
+      setIsLoadingCenters(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadOperatingCenters();
+  }, [loadOperatingCenters]);
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -80,10 +127,6 @@ export default function PractitionerProfilePage() {
       formData.append('isAvailable', isAvailable.toString());
       formData.append('offersHomeVisits', offersHomeVisits.toString());
       formData.append('offersClinicVisits', offersClinicVisits.toString());
-      formData.append('operatingCenterName', operatingCenterName);
-      formData.append('operatingCenterAddress', operatingCenterAddress);
-      formData.append('operatingCenterCity', operatingCenterCity);
-      formData.append('operatingCenterPhone', operatingCenterPhone);
 
       await practitionersAPI.updateProfile(formData);
       toast.success('Profile updated successfully.');
@@ -109,6 +152,83 @@ export default function PractitionerProfilePage() {
     if (e.key === 'Enter') {
       e.preventDefault();
       addSpecialization();
+    }
+  };
+
+  // Operating Center handlers
+  const addNewCenterForm = () => {
+    setOperatingCenters([
+      ...operatingCenters,
+      { name: '', address: '', city: '', phone: '', isSaving: false, isNew: true },
+    ]);
+  };
+
+  const updateCenterField = (index: number, field: keyof CenterFormState, value: string) => {
+    setOperatingCenters((prev) =>
+      prev.map((c, i) => (i === index ? { ...c, [field]: value } : c))
+    );
+  };
+
+  const handleSaveCenter = async (index: number) => {
+    const center = operatingCenters[index];
+    if (!center.name.trim() || !center.address.trim() || !center.city.trim()) {
+      toast.error('Name, address, and city are required.');
+      return;
+    }
+
+    setOperatingCenters((prev) =>
+      prev.map((c, i) => (i === index ? { ...c, isSaving: true } : c))
+    );
+
+    try {
+      const payload = {
+        name: center.name,
+        address: center.address,
+        city: center.city,
+        phone: center.phone || undefined,
+      };
+
+      if (center.isNew) {
+        const response = await practitionersAPI.createOperatingCenter(payload);
+        const created = response.data.data || response.data;
+        setOperatingCenters((prev) =>
+          prev.map((c, i) =>
+            i === index
+              ? { ...c, id: created.id, isSaving: false, isNew: false }
+              : c
+          )
+        );
+        toast.success('Operating center added.');
+      } else {
+        await practitionersAPI.updateOperatingCenter(center.id!, payload);
+        setOperatingCenters((prev) =>
+          prev.map((c, i) => (i === index ? { ...c, isSaving: false } : c))
+        );
+        toast.success('Operating center updated.');
+      }
+    } catch {
+      setOperatingCenters((prev) =>
+        prev.map((c, i) => (i === index ? { ...c, isSaving: false } : c))
+      );
+      toast.error('Failed to save operating center.');
+    }
+  };
+
+  const handleDeleteCenter = async (index: number) => {
+    const center = operatingCenters[index];
+
+    if (center.isNew) {
+      // Just remove the unsaved form
+      setOperatingCenters((prev) => prev.filter((_, i) => i !== index));
+      return;
+    }
+
+    try {
+      await practitionersAPI.deleteOperatingCenter(center.id!);
+      setOperatingCenters((prev) => prev.filter((_, i) => i !== index));
+      toast.success('Operating center removed.');
+    } catch {
+      toast.error('Failed to delete operating center.');
     }
   };
 
@@ -312,7 +432,7 @@ export default function PractitionerProfilePage() {
               {/* Operating Center & Visit Types */}
               <div className="border-t border-gray-200 pt-5">
                 <h4 className="mb-4 text-sm font-semibold text-gray-900">
-                  Operating Center & Visit Types
+                  Operating Centers & Visit Types
                 </h4>
 
                 {/* Visit Mode Toggles */}
@@ -343,33 +463,81 @@ export default function PractitionerProfilePage() {
                   </button>
                 </div>
 
-                {/* Clinic Details (shown when clinic visits enabled) */}
+                {/* Operating Centers List (shown when clinic visits enabled) */}
                 {offersClinicVisits && (
-                  <div className="space-y-4 rounded-lg border border-blue-100 bg-blue-50/30 p-4">
-                    <Input
-                      label="Clinic / Center Name"
-                      value={operatingCenterName}
-                      onChange={(e) => setOperatingCenterName(e.target.value)}
-                      placeholder="e.g. Lusaka Medical Centre"
-                    />
-                    <Input
-                      label="Address"
-                      value={operatingCenterAddress}
-                      onChange={(e) => setOperatingCenterAddress(e.target.value)}
-                      placeholder="e.g. 123 Cairo Road"
-                    />
-                    <Input
-                      label="City"
-                      value={operatingCenterCity}
-                      onChange={(e) => setOperatingCenterCity(e.target.value)}
-                      placeholder="e.g. Lusaka"
-                    />
-                    <Input
-                      label="Clinic Phone"
-                      value={operatingCenterPhone}
-                      onChange={(e) => setOperatingCenterPhone(e.target.value)}
-                      placeholder="e.g. +260211123456"
-                    />
+                  <div className="space-y-4">
+                    {isLoadingCenters ? (
+                      <div className="flex items-center gap-2 text-sm text-gray-500 p-4">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                        Loading operating centers...
+                      </div>
+                    ) : (
+                      <>
+                        {operatingCenters.map((center, index) => (
+                          <div
+                            key={center.id || `new-${index}`}
+                            className="rounded-lg border border-blue-100 bg-blue-50/30 p-4"
+                          >
+                            <div className="mb-3 flex items-center justify-between">
+                              <h5 className="text-sm font-medium text-gray-700">
+                                {center.isNew ? 'New Operating Center' : `Operating Center ${index + 1}`}
+                              </h5>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteCenter(index)}
+                                className="rounded-md p-1 text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                                title="Remove center"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                            <div className="space-y-3">
+                              <Input
+                                label="Clinic / Center Name"
+                                value={center.name}
+                                onChange={(e) => updateCenterField(index, 'name', e.target.value)}
+                                placeholder="e.g. Lusaka Medical Centre"
+                              />
+                              <Input
+                                label="Address"
+                                value={center.address}
+                                onChange={(e) => updateCenterField(index, 'address', e.target.value)}
+                                placeholder="e.g. 123 Cairo Road"
+                              />
+                              <Input
+                                label="City"
+                                value={center.city}
+                                onChange={(e) => updateCenterField(index, 'city', e.target.value)}
+                                placeholder="e.g. Lusaka"
+                              />
+                              <Input
+                                label="Clinic Phone"
+                                value={center.phone}
+                                onChange={(e) => updateCenterField(index, 'phone', e.target.value)}
+                                placeholder="e.g. +260211123456"
+                              />
+                              <Button
+                                size="sm"
+                                onClick={() => handleSaveCenter(index)}
+                                isLoading={center.isSaving}
+                              >
+                                <Save className="mr-1.5 h-3.5 w-3.5" />
+                                {center.isNew ? 'Add Center' : 'Save Changes'}
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+
+                        <button
+                          type="button"
+                          onClick={addNewCenterForm}
+                          className="flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-blue-200 px-4 py-3 text-sm font-medium text-blue-600 transition-colors hover:border-blue-300 hover:bg-blue-50/50"
+                        >
+                          <Plus className="h-4 w-4" />
+                          Add Operating Center
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>

@@ -12,6 +12,8 @@ import {
   SearchPractitionersDto,
   VerifyDocumentDto,
   UpdateLocationDto,
+  CreateOperatingCenterDto,
+  UpdateOperatingCenterDto,
 } from './dto/practitioner.dto';
 
 @Injectable()
@@ -28,6 +30,10 @@ export class PractitionersService {
       include: {
         documents: {
           orderBy: { createdAt: 'desc' },
+        },
+        operatingCenters: {
+          where: { isActive: true },
+          orderBy: { createdAt: 'asc' },
         },
         user: {
           select: {
@@ -572,6 +578,10 @@ export class PractitionersService {
     const profile = await this.prisma.practitionerProfile.findUnique({
       where: { id },
       include: {
+        operatingCenters: {
+          where: { isActive: true },
+          orderBy: { createdAt: 'asc' },
+        },
         user: {
           select: {
             id: true,
@@ -746,6 +756,126 @@ export class PractitionersService {
     });
 
     return updated;
+  }
+
+  // =========================================================================
+  // Operating Centers CRUD
+  // =========================================================================
+
+  /**
+   * List operating centers for the authenticated practitioner.
+   */
+  async getOperatingCenters(userId: string) {
+    const profile = await this.prisma.practitionerProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Practitioner profile not found');
+    }
+
+    return this.prisma.operatingCenter.findMany({
+      where: { practitionerProfileId: profile.id, isActive: true },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  /**
+   * Create a new operating center for the authenticated practitioner.
+   */
+  async createOperatingCenter(userId: string, dto: CreateOperatingCenterDto) {
+    const profile = await this.prisma.practitionerProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Practitioner profile not found');
+    }
+
+    return this.prisma.operatingCenter.create({
+      data: {
+        practitionerProfileId: profile.id,
+        name: dto.name,
+        address: dto.address,
+        city: dto.city,
+        phone: dto.phone,
+      },
+    });
+  }
+
+  /**
+   * Update an operating center (verify ownership).
+   */
+  async updateOperatingCenter(
+    userId: string,
+    centerId: string,
+    dto: UpdateOperatingCenterDto,
+  ) {
+    const profile = await this.prisma.practitionerProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Practitioner profile not found');
+    }
+
+    const center = await this.prisma.operatingCenter.findUnique({
+      where: { id: centerId },
+    });
+
+    if (!center) {
+      throw new NotFoundException('Operating center not found');
+    }
+
+    if (center.practitionerProfileId !== profile.id) {
+      throw new ForbiddenException(
+        'You do not have permission to update this operating center',
+      );
+    }
+
+    const data: Record<string, unknown> = {};
+    if (dto.name !== undefined) data.name = dto.name;
+    if (dto.address !== undefined) data.address = dto.address;
+    if (dto.city !== undefined) data.city = dto.city;
+    if (dto.phone !== undefined) data.phone = dto.phone;
+
+    return this.prisma.operatingCenter.update({
+      where: { id: centerId },
+      data,
+    });
+  }
+
+  /**
+   * Delete an operating center (verify ownership).
+   */
+  async deleteOperatingCenter(userId: string, centerId: string) {
+    const profile = await this.prisma.practitionerProfile.findUnique({
+      where: { userId },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Practitioner profile not found');
+    }
+
+    const center = await this.prisma.operatingCenter.findUnique({
+      where: { id: centerId },
+    });
+
+    if (!center) {
+      throw new NotFoundException('Operating center not found');
+    }
+
+    if (center.practitionerProfileId !== profile.id) {
+      throw new ForbiddenException(
+        'You do not have permission to delete this operating center',
+      );
+    }
+
+    await this.prisma.operatingCenter.delete({
+      where: { id: centerId },
+    });
+
+    return { message: 'Operating center deleted successfully' };
   }
 
   /**
