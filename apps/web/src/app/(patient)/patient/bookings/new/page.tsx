@@ -49,7 +49,20 @@ function NewBookingPage() {
   useEffect(() => {
     if (preselectedPractitionerId) {
       practitionersAPI.getById(preselectedPractitionerId).then((res) => {
-        const p = res.data.data || res.data;
+        const raw = res.data.data || res.data;
+        // getById returns a PractitionerProfile with nested user — flatten it
+        const p = raw.user && !raw.firstName
+          ? {
+              id: raw.user.id,
+              firstName: raw.user.firstName,
+              lastName: raw.user.lastName,
+              practitionerProfile: {
+                practitionerType: raw.practitionerType,
+                ratingAvg: raw.ratingAvg,
+                baseConsultationFee: raw.baseConsultationFee,
+              },
+            }
+          : raw;
         setSelectedPractitioner(p);
       }).catch(() => {});
     }
