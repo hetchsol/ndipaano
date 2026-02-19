@@ -118,6 +118,27 @@
     }
   }
 
+  /* Heart pulse animation */
+  .heart-pulse {
+    animation: heart-beat 1s ease-in-out infinite;
+  }
+
+  @keyframes heart-beat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+  }
+
+  /* Every 5th pulse (5s cycle), the heart turns red for one beat */
+  .heart-pulse svg {
+    animation: heart-red-flash 5s linear infinite;
+  }
+
+  @keyframes heart-red-flash {
+    0%, 79% { color: inherit; }
+    81%, 98% { color: #ef4444; }
+    100% { color: inherit; }
+  }
+
   .scrollbar-thin {
     scrollbar-width: thin;
   }

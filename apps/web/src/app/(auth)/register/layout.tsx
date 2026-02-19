@@ -12,10 +12,10 @@ export default function RegisterLayout({
       {/* Left Side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 lg:flex-col lg:justify-between bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 p-12">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
+          <div className="heart-pulse flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
             <Heart className="h-6 w-6 text-white" />
           </div>
-          <span className="text-2xl font-bold text-white">Ndipaano!</span>
+          <span className="text-2xl font-bold text-white ndipaano-brand">Ndipaano!</span>
         </Link>
         <div>
           <h1 className="text-4xl font-bold text-white">
@@ -57,10 +57,10 @@ export default function RegisterLayout({
         <div className="w-full max-w-md">
           <div className="mb-8 lg:hidden">
             <Link href="/" className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-700">
+              <div className="heart-pulse flex h-9 w-9 items-center justify-center rounded-lg bg-primary-700">
                 <Heart className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-primary-700">Ndipaano!</span>
+              <span className="text-xl font-bold text-primary-700 ndipaano-brand">Ndipaano!</span>
             </Link>
           </div>
           {children}
