@@ -106,3 +106,25 @@ export enum InsuranceProvider {
   PROFESSIONAL_INSURANCE = 'PROFESSIONAL_INSURANCE',
   OTHER = 'OTHER',
 }
+
+export enum MessageType {
+  TEXT = 'TEXT',
+  IMAGE = 'IMAGE',
+  FILE = 'FILE',
+  SYSTEM = 'SYSTEM',
+}
+
+export enum DayOfWeek {
+  MONDAY = 'MONDAY',
+  TUESDAY = 'TUESDAY',
+  WEDNESDAY = 'WEDNESDAY',
+  THURSDAY = 'THURSDAY',
+  FRIDAY = 'FRIDAY',
+  SATURDAY = 'SATURDAY',
+  SUNDAY = 'SUNDAY',
+}
+
+export enum ReminderType {
+  TWENTY_FOUR_HOURS = 'TWENTY_FOUR_HOURS',
+  ONE_HOUR = 'ONE_HOUR',
+}

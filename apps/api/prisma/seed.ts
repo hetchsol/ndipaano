@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, PractitionerType, Gender, ServiceType, BookingStatus, PaymentStatus, PaymentMethod, ConsentType, DocumentType, NotificationChannel, DiagnosticTestCategory } from '@prisma/client';
+import { PrismaClient, UserRole, PractitionerType, Gender, ServiceType, BookingStatus, PaymentStatus, PaymentMethod, ConsentType, DocumentType, NotificationChannel, DiagnosticTestCategory, DayOfWeek, MessageType } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -7,6 +7,11 @@ async function main() {
   console.log('Seeding database...');
 
   // Clean existing data
+  await prisma.bookingReminder.deleteMany();
+  await prisma.message.deleteMany();
+  await prisma.conversation.deleteMany();
+  await prisma.practitionerBlackout.deleteMany();
+  await prisma.practitionerAvailability.deleteMany();
   await prisma.practitionerTypeDiagnosticTest.deleteMany();
   await prisma.diagnosticTest.deleteMany();
   await prisma.notification.deleteMany();
@@ -798,6 +803,85 @@ async function main() {
   });
 
   console.log(`Created ${junctionData.length} practitioner-type test mappings`);
+
+  // --- Practitioner Availability ---
+  const availabilityData = [];
+  const weekdays = [DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY, DayOfWeek.THURSDAY, DayOfWeek.FRIDAY];
+  const practitioners = [doctor1.id, nurse1.id, physio1.id];
+
+  for (const practId of practitioners) {
+    for (const day of weekdays) {
+      availabilityData.push({
+        practitionerId: practId,
+        dayOfWeek: day,
+        startTime: '08:00',
+        endTime: '12:00',
+        isActive: true,
+      });
+      availabilityData.push({
+        practitionerId: practId,
+        dayOfWeek: day,
+        startTime: '14:00',
+        endTime: '17:00',
+        isActive: true,
+      });
+    }
+    // Saturday morning for doctor
+    if (practId === doctor1.id) {
+      availabilityData.push({
+        practitionerId: practId,
+        dayOfWeek: DayOfWeek.SATURDAY,
+        startTime: '09:00',
+        endTime: '13:00',
+        isActive: true,
+      });
+    }
+  }
+
+  await prisma.practitionerAvailability.createMany({
+    data: availabilityData,
+    skipDuplicates: true,
+  });
+
+  console.log(`Created ${availabilityData.length} availability records`);
+
+  // --- Sample Conversations & Messages for confirmed bookings ---
+  const conv1 = await prisma.conversation.create({
+    data: {
+      bookingId: upcomingBooking.id,
+      patientId: patient1.id,
+      practitionerId: nurse1.id,
+      isActive: true,
+    },
+  });
+
+  await prisma.message.createMany({
+    data: [
+      {
+        conversationId: conv1.id,
+        senderId: nurse1.id,
+        type: MessageType.SYSTEM,
+        content: 'Booking confirmed. You can now chat with your practitioner.',
+        isEncrypted: false,
+      },
+      {
+        conversationId: conv1.id,
+        senderId: patient1.id,
+        type: MessageType.TEXT,
+        content: 'Hello, I wanted to confirm the vaccination appointment for my child.',
+        isEncrypted: false,
+      },
+      {
+        conversationId: conv1.id,
+        senderId: nurse1.id,
+        type: MessageType.TEXT,
+        content: 'Yes, everything is confirmed! Please bring the child\'s health passport/card.',
+        isEncrypted: false,
+      },
+    ],
+  });
+
+  console.log('Created sample conversations and messages');
 
   console.log('\n--- Seed Complete ---');
   console.log('Login credentials for all users: Password123!');

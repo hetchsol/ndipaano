@@ -9,6 +9,8 @@ import {
   Gender,
   BloodType,
   InsuranceProvider,
+  MessageType,
+  DayOfWeek,
 } from './enums';
 
 // ─── Authentication ──────────────────────────────────────────────────────────
@@ -234,4 +236,75 @@ export interface AuditLogEntry {
   ipAddress: string;
   userAgent: string;
   timestamp: string;
+}
+
+// ─── Chat & Messaging ──────────────────────────────────────────────────────
+
+export interface Conversation {
+  id: string;
+  bookingId: string;
+  patientId: string;
+  practitionerId: string;
+  isActive: boolean;
+  closedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  lastMessage?: ChatMessage;
+  unreadCount?: number;
+  otherParty?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+}
+
+export interface ChatMessage {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  type: MessageType;
+  content: string;
+  fileName?: string;
+  fileSize?: number;
+  mimeType?: string;
+  isEncrypted: boolean;
+  readAt?: string;
+  deletedAt?: string;
+  createdAt: string;
+  sender?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
+}
+
+// ─── Scheduling ─────────────────────────────────────────────────────────────
+
+export interface TimeSlot {
+  startTime: string; // ISO datetime
+  endTime: string;   // ISO datetime
+  available: boolean;
+}
+
+export interface CalendarDay {
+  date: string; // YYYY-MM-DD
+  availableSlots: number;
+  totalSlots: number;
+  isBlackout: boolean;
+}
+
+export interface AvailabilityWindow {
+  id: string;
+  dayOfWeek: DayOfWeek;
+  startTime: string; // HH:mm
+  endTime: string;   // HH:mm
+  isActive: boolean;
+}
+
+export interface BlackoutDate {
+  id: string;
+  date: string;
+  startTime?: string;
+  endTime?: string;
+  reason?: string;
 }

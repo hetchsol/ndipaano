@@ -1,10 +1,12 @@
 import {
   Injectable,
+  Inject,
   NotFoundException,
   BadRequestException,
   ForbiddenException,
   ConflictException,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { BookingStatus, UserRole } from '@prisma/client';
@@ -12,6 +14,8 @@ import {
   CreateBookingDto,
   BookingQueryDto,
 } from './dto/booking.dto';
+import { SchedulingService } from '../scheduling/scheduling.service';
+import { ChatService } from '../chat/chat.service';
 
 /**
  * Practitioner roles from the Prisma UserRole enum.
@@ -29,7 +33,11 @@ const PRACTITIONER_ROLES: UserRole[] = [
 export class BookingsService {
   private readonly logger = new Logger(BookingsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Optional() @Inject(SchedulingService) private readonly schedulingService?: SchedulingService,
+    @Optional() @Inject(ChatService) private readonly chatService?: ChatService,
+  ) {}
 
   // ===========================================================================
   // Create Booking
@@ -85,34 +93,51 @@ export class BookingsService {
       throw new BadRequestException('You cannot book yourself');
     }
 
-    // Check for scheduling conflicts within a 1-hour window
-    const oneHourBefore = new Date(scheduledAt.getTime() - 60 * 60 * 1000);
-    const oneHourAfter = new Date(scheduledAt.getTime() + 60 * 60 * 1000);
+    // Validate slot availability via scheduling service if available
+    if (this.schedulingService) {
+      try {
+        await this.schedulingService.validateSlotAvailability(dto.practitionerId, scheduledAt);
+      } catch (error) {
+        throw error;
+      }
+    } else {
+      // Fallback: Check for scheduling conflicts within a 1-hour window
+      const oneHourBefore = new Date(scheduledAt.getTime() - 60 * 60 * 1000);
+      const oneHourAfter = new Date(scheduledAt.getTime() + 60 * 60 * 1000);
 
-    const conflictingBooking = await this.prisma.booking.findFirst({
-      where: {
-        practitionerId: dto.practitionerId,
-        scheduledAt: {
-          gte: oneHourBefore,
-          lte: oneHourAfter,
+      const conflictingBooking = await this.prisma.booking.findFirst({
+        where: {
+          practitionerId: dto.practitionerId,
+          scheduledAt: {
+            gte: oneHourBefore,
+            lte: oneHourAfter,
+          },
+          status: {
+            in: [
+              BookingStatus.PENDING,
+              BookingStatus.CONFIRMED,
+              BookingStatus.PRACTITIONER_EN_ROUTE,
+              BookingStatus.IN_PROGRESS,
+            ],
+          },
         },
-        status: {
-          in: [
-            BookingStatus.PENDING,
-            BookingStatus.CONFIRMED,
-            BookingStatus.PRACTITIONER_EN_ROUTE,
-            BookingStatus.IN_PROGRESS,
-          ],
-        },
-      },
-    });
+      });
 
-    if (conflictingBooking) {
-      throw new ConflictException(
-        'The practitioner has a scheduling conflict within the requested time window. ' +
-        'Please select a different time at least 1 hour apart from existing bookings.',
-      );
+      if (conflictingBooking) {
+        throw new ConflictException(
+          'The practitioner has a scheduling conflict within the requested time window. ' +
+          'Please select a different time at least 1 hour apart from existing bookings.',
+        );
+      }
     }
+
+    // Calculate scheduled end time from practitioner profile settings
+    const profile = await this.prisma.practitionerProfile.findUnique({
+      where: { userId: dto.practitionerId },
+      select: { slotDurationMinutes: true },
+    });
+    const slotDuration = profile?.slotDurationMinutes || 60;
+    const scheduledEndTime = new Date(scheduledAt.getTime() + slotDuration * 60 * 1000);
 
     // Create the booking with PENDING (requested) status
     const booking = await this.prisma.booking.create({
@@ -122,6 +147,7 @@ export class BookingsService {
         serviceType: dto.serviceType,
         status: BookingStatus.PENDING,
         scheduledAt,
+        scheduledEndTime,
         address: dto.address,
         city: dto.city,
         province: dto.province,
@@ -386,6 +412,29 @@ export class BookingsService {
       `Booking ${bookingId} accepted by practitioner ${practitionerUserId}`,
     );
 
+    // Create chat conversation for this booking
+    if (this.chatService) {
+      try {
+        await this.chatService.createConversation(
+          bookingId,
+          booking.patientId,
+          booking.practitionerId,
+        );
+        this.logger.log(`Chat conversation created for booking ${bookingId}`);
+      } catch (error) {
+        this.logger.warn(`Failed to create chat conversation for booking ${bookingId}: ${(error as Error).message}`);
+      }
+    }
+
+    // Create reminders
+    if (this.schedulingService) {
+      try {
+        await this.schedulingService.createReminders(bookingId, booking.scheduledAt);
+      } catch (error) {
+        this.logger.warn(`Failed to create reminders for booking ${bookingId}: ${(error as Error).message}`);
+      }
+    }
+
     return updated;
   }
 
@@ -473,6 +522,9 @@ export class BookingsService {
       `Booking ${bookingId}: practitioner ${practitionerUserId} is en route`,
     );
 
+    // Send system message to chat
+    await this.sendBookingSystemMessage(bookingId, 'Practitioner is on the way to your location.');
+
     return updated;
   }
 
@@ -532,6 +584,8 @@ export class BookingsService {
       `Booking ${bookingId}: visit started by practitioner ${practitionerUserId}`,
     );
 
+    await this.sendBookingSystemMessage(bookingId, 'The medical visit has started.');
+
     return updated;
   }
 
@@ -573,6 +627,8 @@ export class BookingsService {
     this.logger.log(
       `Booking ${bookingId}: visit completed by practitioner ${practitionerUserId}`,
     );
+
+    await this.sendBookingSystemMessage(bookingId, 'The visit has been completed. Thank you!');
 
     return updated;
   }
@@ -639,6 +695,17 @@ export class BookingsService {
     this.logger.log(
       `Booking ${bookingId} cancelled by user ${userId}. Reason: ${reason || 'N/A'}`,
     );
+
+    // Cancel reminders
+    if (this.schedulingService) {
+      try {
+        await this.schedulingService.cancelReminders(bookingId);
+      } catch (error) {
+        this.logger.warn(`Failed to cancel reminders for booking ${bookingId}: ${(error as Error).message}`);
+      }
+    }
+
+    await this.sendBookingSystemMessage(bookingId, `Booking has been cancelled.${reason ? ` Reason: ${reason}` : ''}`);
 
     return updated;
   }
@@ -778,6 +845,25 @@ export class BookingsService {
     if (booking.practitionerId !== practitionerUserId) {
       throw new ForbiddenException(
         'You are not the assigned practitioner for this booking',
+      );
+    }
+  }
+
+  /**
+   * Send a system message to the chat conversation associated with a booking.
+   */
+  private async sendBookingSystemMessage(bookingId: string, content: string) {
+    if (!this.chatService) return;
+    try {
+      const conversation = await this.prisma.conversation.findUnique({
+        where: { bookingId },
+      });
+      if (conversation) {
+        await this.chatService.sendSystemMessage(conversation.id, content);
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Failed to send system message for booking ${bookingId}: ${(error as Error).message}`,
       );
     }
   }

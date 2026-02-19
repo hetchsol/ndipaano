@@ -16,6 +16,7 @@ import {
   Settings,
   Heart,
   CreditCard,
+  MessageCircle,
 } from 'lucide-react';
 
 export function Header() {
@@ -23,6 +24,22 @@ export function Header() {
   const { unreadCount } = useNotifications();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [chatUnread, setChatUnread] = useState(0);
+
+  React.useEffect(() => {
+    if (!isAuthenticated) return;
+    import('@/lib/api').then(({ chatAPI }) => {
+      chatAPI.getUnreadCount().then((res) => {
+        const count = res.data?.data?.unreadCount ?? res.data?.data ?? 0;
+        setChatUnread(count);
+      }).catch(() => {});
+    });
+  }, [isAuthenticated]);
+
+  const getMessagesLink = () => {
+    if (!user) return '/login';
+    return user.role === 'practitioner' ? '/practitioner/messages' : '/patient/messages';
+  };
 
   const getDashboardLink = () => {
     if (!user) return '/login';
@@ -66,6 +83,19 @@ export function Header() {
 
             {isAuthenticated ? (
               <div className="flex items-center gap-4">
+                {/* Messages */}
+                <Link
+                  href={getMessagesLink()}
+                  className="relative rounded-full p-2.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  {chatUnread > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary-700 text-[10px] font-bold text-white">
+                      {chatUnread > 9 ? '9+' : chatUnread}
+                    </span>
+                  )}
+                </Link>
+
                 {/* Notifications */}
                 <Link
                   href={getDashboardLink()}

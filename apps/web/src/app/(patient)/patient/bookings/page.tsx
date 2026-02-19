@@ -134,12 +134,14 @@ export default function BookingsPage() {
             Manage your appointments and consultations.
           </p>
         </div>
-        <Link href="/search">
-          <Button>
-            <Search className="mr-2 h-4 w-4" />
-            New Booking
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/patient/bookings/new">
+            <Button>
+              <CalendarDays className="mr-2 h-4 w-4" />
+              New Booking
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <Tabs defaultValue="upcoming" value={activeTab} onValueChange={setActiveTab}>

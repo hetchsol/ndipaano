@@ -13,6 +13,9 @@ export {
   Gender,
   BloodType,
   InsuranceProvider,
+  MessageType,
+  DayOfWeek,
+  ReminderType,
 } from './types/enums';
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
@@ -34,6 +37,12 @@ export type {
   Prescription,
   ConsentRecord,
   AuditLogEntry,
+  Conversation,
+  ChatMessage,
+  TimeSlot,
+  CalendarDay,
+  AvailabilityWindow,
+  BlackoutDate,
 } from './types/interfaces';
 
 // ─── Validation Schemas ──────────────────────────────────────────────────────
@@ -50,6 +59,12 @@ export {
   createPrescriptionSchema,
   practitionerSearchSchema,
   paymentRequestSchema,
+  createMessageSchema,
+  createAvailabilitySchema,
+  bulkAvailabilitySchema,
+  createBlackoutSchema,
+  rescheduleBookingSchema,
+  updateSchedulingSettingsSchema,
 } from './validation/schemas';
 
 export type {
@@ -62,6 +77,12 @@ export type {
   CreatePrescriptionInput,
   PractitionerSearchInput,
   PaymentRequestInput,
+  CreateMessageInput,
+  CreateAvailabilityInput,
+  BulkAvailabilityInput,
+  CreateBlackoutInput,
+  RescheduleBookingInput,
+  UpdateSchedulingSettingsInput,
 } from './validation/schemas';
 
 // ─── Constants ───────────────────────────────────────────────────────────────

@@ -6,6 +6,8 @@ import {
   Gender,
   PaymentMethod,
   InsuranceProvider,
+  MessageType,
+  DayOfWeek,
 } from '../types/enums';
 
 // ─── Reusable Field Validators ───────────────────────────────────────────────
@@ -295,6 +297,78 @@ export const paymentRequestSchema = z.object({
     .optional(),
 });
 
+// ─── Chat Schemas ───────────────────────────────────────────────────────────
+
+export const createMessageSchema = z.object({
+  type: z.nativeEnum(MessageType).default(MessageType.TEXT),
+  content: z
+    .string()
+    .min(1, 'Message content is required')
+    .max(5000, 'Message must be at most 5000 characters'),
+  fileName: z.string().max(255).optional(),
+  fileSize: z.number().int().positive().max(50 * 1024 * 1024).optional(), // 50MB max
+  mimeType: z.string().max(100).optional(),
+});
+
+// ─── Scheduling Schemas ─────────────────────────────────────────────────────
+
+const timeStringSchema = z
+  .string()
+  .regex(/^([01]\d|2[0-3]):([0-5]\d)$/, 'Time must be in HH:mm format');
+
+export const createAvailabilitySchema = z.object({
+  dayOfWeek: z.nativeEnum(DayOfWeek),
+  startTime: timeStringSchema,
+  endTime: timeStringSchema,
+  isActive: z.boolean().default(true),
+}).refine(
+  (data) => data.startTime < data.endTime,
+  { message: 'End time must be after start time', path: ['endTime'] },
+);
+
+export const bulkAvailabilitySchema = z.object({
+  slots: z.array(
+    z.object({
+      dayOfWeek: z.nativeEnum(DayOfWeek),
+      startTime: timeStringSchema,
+      endTime: timeStringSchema,
+      isActive: z.boolean().default(true),
+    }),
+  ),
+});
+
+export const createBlackoutSchema = z.object({
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
+  startTime: timeStringSchema.optional(),
+  endTime: timeStringSchema.optional(),
+  reason: z.string().max(500).optional(),
+});
+
+export const rescheduleBookingSchema = z.object({
+  scheduledAt: z
+    .string()
+    .datetime({ message: 'Scheduled time must be a valid ISO 8601 datetime' })
+    .refine((val) => new Date(val) > new Date(), 'New time must be in the future'),
+  reason: z.string().max(500).optional(),
+});
+
+export const updateSchedulingSettingsSchema = z.object({
+  slotDurationMinutes: z
+    .number()
+    .int()
+    .min(15, 'Slot duration must be at least 15 minutes')
+    .max(240, 'Slot duration must be at most 4 hours')
+    .optional(),
+  bufferMinutes: z
+    .number()
+    .int()
+    .min(0, 'Buffer cannot be negative')
+    .max(60, 'Buffer must be at most 60 minutes')
+    .optional(),
+});
+
 // ─── Inferred Types ──────────────────────────────────────────────────────────
 
 export type LoginInput = z.infer<typeof loginSchema>;
@@ -306,3 +380,9 @@ export type CreateMedicalRecordInput = z.infer<typeof createMedicalRecordSchema>
 export type CreatePrescriptionInput = z.infer<typeof createPrescriptionSchema>;
 export type PractitionerSearchInput = z.infer<typeof practitionerSearchSchema>;
 export type PaymentRequestInput = z.infer<typeof paymentRequestSchema>;
+export type CreateMessageInput = z.infer<typeof createMessageSchema>;
+export type CreateAvailabilityInput = z.infer<typeof createAvailabilitySchema>;
+export type BulkAvailabilityInput = z.infer<typeof bulkAvailabilitySchema>;
+export type CreateBlackoutInput = z.infer<typeof createBlackoutSchema>;
+export type RescheduleBookingInput = z.infer<typeof rescheduleBookingSchema>;
+export type UpdateSchedulingSettingsInput = z.infer<typeof updateSchedulingSettingsSchema>;

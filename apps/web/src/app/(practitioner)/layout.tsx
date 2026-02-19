@@ -11,11 +11,15 @@ import {
   UserCircle,
   FileCheck,
   Menu,
+  MessageCircle,
+  Clock,
 } from 'lucide-react';
 
 const practitionerNavItems: SidebarItem[] = [
   { label: 'Dashboard', href: '/practitioner/dashboard', icon: LayoutDashboard },
   { label: 'Schedule', href: '/practitioner/schedule', icon: CalendarDays },
+  { label: 'Availability', href: '/practitioner/availability', icon: Clock },
+  { label: 'Messages', href: '/practitioner/messages', icon: MessageCircle },
   { label: 'Earnings', href: '/practitioner/earnings', icon: DollarSign },
   { label: 'Profile', href: '/practitioner/profile', icon: UserCircle },
   { label: 'Documents', href: '/practitioner/profile#documents', icon: FileCheck },

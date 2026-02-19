@@ -327,4 +327,100 @@ export const paymentsAPI = {
     api.post('/payments/payout', data),
 };
 
+// --- Scheduling API ---
+export const schedulingAPI = {
+  // Practitioner availability
+  getMyAvailability: () => api.get('/scheduling/availability'),
+
+  createAvailability: (data: {
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+    isActive?: boolean;
+  }) => api.post('/scheduling/availability', data),
+
+  updateAvailability: (id: string, data: {
+    startTime?: string;
+    endTime?: string;
+    isActive?: boolean;
+  }) => api.put(`/scheduling/availability/${id}`, data),
+
+  deleteAvailability: (id: string) =>
+    api.delete(`/scheduling/availability/${id}`),
+
+  setBulkAvailability: (slots: Array<{
+    dayOfWeek: string;
+    startTime: string;
+    endTime: string;
+    isActive?: boolean;
+  }>) => api.post('/scheduling/availability/bulk', { slots }),
+
+  // Blackouts
+  getBlackouts: (params?: { startDate?: string; endDate?: string }) =>
+    api.get('/scheduling/blackouts', { params }),
+
+  createBlackout: (data: {
+    date: string;
+    startTime?: string;
+    endTime?: string;
+    reason?: string;
+  }) => api.post('/scheduling/blackouts', data),
+
+  deleteBlackout: (id: string) =>
+    api.delete(`/scheduling/blackouts/${id}`),
+
+  // Public slot queries
+  getAvailableSlots: (practitionerId: string, startDate: string, endDate: string) =>
+    api.get(`/scheduling/practitioners/${practitionerId}/slots`, {
+      params: { startDate, endDate },
+    }),
+
+  getCalendarView: (practitionerId: string, year: number, month: number) =>
+    api.get(`/scheduling/practitioners/${practitionerId}/calendar`, {
+      params: { year, month },
+    }),
+
+  // Reschedule
+  rescheduleBooking: (bookingId: string, data: {
+    scheduledAt: string;
+    reason?: string;
+  }) => api.patch(`/scheduling/bookings/${bookingId}/reschedule`, data),
+
+  // Settings
+  getSettings: () => api.get('/scheduling/settings'),
+
+  updateSettings: (data: {
+    slotDurationMinutes?: number;
+    bufferMinutes?: number;
+  }) => api.patch('/scheduling/settings', data),
+};
+
+// --- Chat API ---
+export const chatAPI = {
+  listConversations: (params?: { page?: number; limit?: number }) =>
+    api.get('/chat/conversations', { params }),
+
+  getConversation: (id: string) =>
+    api.get(`/chat/conversations/${id}`),
+
+  getMessages: (conversationId: string, params?: { cursor?: string; limit?: number }) =>
+    api.get(`/chat/conversations/${conversationId}/messages`, { params }),
+
+  sendMessage: (conversationId: string, data: {
+    type?: string;
+    content: string;
+    fileName?: string;
+    fileSize?: number;
+    mimeType?: string;
+  }) => api.post(`/chat/conversations/${conversationId}/messages`, data),
+
+  markAsRead: (conversationId: string) =>
+    api.patch(`/chat/conversations/${conversationId}/read`),
+
+  getUnreadCount: () => api.get('/chat/unread-count'),
+
+  getUploadUrl: (data: { fileName: string; mimeType: string; fileSize: number }) =>
+    api.post('/chat/upload-url', data),
+};
+
 export default api;

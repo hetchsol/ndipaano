@@ -93,6 +93,7 @@ export default function BookingDetailPage() {
   const [booking, setBooking] = useState<BookingDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [showRescheduleDialog, setShowRescheduleDialog] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
 
@@ -154,6 +155,7 @@ export default function BookingDetailPage() {
     );
   }
 
+  const canReschedule = ['pending', 'confirmed', 'requested', 'accepted'].includes(booking.status);
   const canCancel = ['pending', 'confirmed', 'requested', 'accepted'].includes(booking.status);
   const canTrack = ['en_route', 'en-route', 'in-progress', 'in_progress'].includes(booking.status);
   const isCancelled = booking.status === 'cancelled';
@@ -321,6 +323,12 @@ export default function BookingDetailPage() {
               )}
             </CardContent>
             <CardFooter className="gap-3">
+              {canReschedule && (
+                <Button variant="outline" onClick={() => setShowRescheduleDialog(true)}>
+                  <Calendar className="mr-2 h-4 w-4" />
+                  Reschedule
+                </Button>
+              )}
               {canCancel && (
                 <Button variant="destructive" onClick={() => setShowCancelDialog(true)}>
                   Cancel Booking
@@ -511,6 +519,39 @@ export default function BookingDetailPage() {
           </Button>
         </DialogFooter>
       </Dialog>
+
+      {/* Reschedule Dialog */}
+      {booking.practitioner?.id && (
+        <RescheduleDialogWrapper
+          bookingId={bookingId}
+          practitionerId={booking.practitioner.id}
+          open={showRescheduleDialog}
+          onClose={() => setShowRescheduleDialog(false)}
+          onRescheduled={() => {
+            setShowRescheduleDialog(false);
+            router.push('/patient/bookings');
+          }}
+        />
+      )}
     </div>
   );
+}
+
+function RescheduleDialogWrapper(props: {
+  bookingId: string;
+  practitionerId: string;
+  open: boolean;
+  onClose: () => void;
+  onRescheduled: () => void;
+}) {
+  const [RescheduleDialog, setRescheduleDialog] = React.useState<React.ComponentType<any> | null>(null);
+
+  React.useEffect(() => {
+    import('@/components/scheduling/reschedule-dialog').then((mod) => {
+      setRescheduleDialog(() => mod.RescheduleDialog);
+    });
+  }, []);
+
+  if (!RescheduleDialog) return null;
+  return <RescheduleDialog {...props} />;
 }

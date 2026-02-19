@@ -12,11 +12,13 @@ import {
   CreditCard,
   Settings,
   Menu,
+  MessageCircle,
 } from 'lucide-react';
 
 const patientNavItems: SidebarItem[] = [
   { label: 'Dashboard', href: '/patient/dashboard', icon: LayoutDashboard },
   { label: 'Bookings', href: '/patient/bookings', icon: CalendarDays },
+  { label: 'Messages', href: '/patient/messages', icon: MessageCircle },
   { label: 'Medical Records', href: '/patient/records', icon: FileText },
   { label: 'Prescriptions', href: '/patient/prescriptions', icon: Pill },
   { label: 'Rates', href: '/patient/rates', icon: CreditCard },

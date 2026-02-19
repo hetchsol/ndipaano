@@ -139,6 +139,28 @@ enum DataRequestType {
   OBJECTION
 }
 
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+}
+
+enum DayOfWeek {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+enum ReminderType {
+  TWENTY_FOUR_HOURS
+  ONE_HOUR
+}
+
 // =============================================================================
 // Models
 // =============================================================================
@@ -190,6 +212,15 @@ model User {
   patientReviews       Review[]        @relation("PatientReviews")
   // Reviews received by practitioner
   practitionerReviews  Review[]        @relation("PractitionerReviews")
+  // Chat conversations as patient
+  patientConversations  Conversation[]  @relation("PatientConversations")
+  // Chat conversations as practitioner
+  practitionerConversations Conversation[] @relation("PractitionerConversations")
+  // Messages sent
+  sentMessages          Message[]       @relation("SentMessages")
+  // Scheduling
+  practitionerAvailabilities PractitionerAvailability[]
+  practitionerBlackouts      PractitionerBlackout[]
 
   @@index([email])
   @@index([phone])
@@ -249,6 +280,8 @@ model PractitionerProfile {
   operatingCenterPhone   String?
   offersHomeVisits       Boolean          @default(true)
   offersClinicVisits     Boolean          @default(false)
+  slotDurationMinutes    Int              @default(60)
+  bufferMinutes          Int              @default(15)
   createdAt              DateTime         @default(now())
   updatedAt              DateTime         @updatedAt
 
@@ -307,10 +340,14 @@ model Booking {
   practitioner      User          @relation("PractitionerBookings", fields: [practitionerId], references: [id])
   serviceType       ServiceType
   status            BookingStatus @default(PENDING)
-  scheduledAt       DateTime
-  startedAt         DateTime?
-  completedAt       DateTime?
-  cancelledAt       DateTime?
+  scheduledAt        DateTime
+  scheduledEndTime   DateTime?
+  rescheduledFrom    DateTime?
+  rescheduledAt      DateTime?
+  rescheduledBy      String?       @db.Uuid
+  startedAt          DateTime?
+  completedAt        DateTime?
+  cancelledAt        DateTime?
   locationLat       Float?
   locationLng       Float?
   address           String?
@@ -327,6 +364,8 @@ model Booking {
   payment        Payment?
   review         Review?
   insuranceClaim InsuranceClaim?
+  conversation   Conversation?
+  reminders      BookingReminder[]
 
   @@index([patientId])
   @@index([practitionerId])
@@ -598,6 +637,105 @@ model EmergencyContact {
 
   @@index([userId])
   @@map("emergency_contacts")
+}
+
+// =============================================================================
+// Chat & Messaging
+// =============================================================================
+
+model Conversation {
+  id              String    @id @default(uuid()) @db.Uuid
+  bookingId       String    @unique @db.Uuid
+  booking         Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  patientId       String    @db.Uuid
+  patient         User      @relation("PatientConversations", fields: [patientId], references: [id])
+  practitionerId  String    @db.Uuid
+  practitioner    User      @relation("PractitionerConversations", fields: [practitionerId], references: [id])
+  isActive        Boolean   @default(true)
+  closedAt        DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  messages Message[]
+
+  @@index([patientId])
+  @@index([practitionerId])
+  @@index([isActive])
+  @@map("conversations")
+}
+
+model Message {
+  id              String      @id @default(uuid()) @db.Uuid
+  conversationId  String      @db.Uuid
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId        String      @db.Uuid
+  sender          User        @relation("SentMessages", fields: [senderId], references: [id])
+  type            MessageType @default(TEXT)
+  content         String
+  fileName        String?
+  fileSize        Int?
+  mimeType        String?
+  isEncrypted     Boolean     @default(true)
+  readAt          DateTime?
+  deletedAt       DateTime?
+  createdAt       DateTime    @default(now())
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+// =============================================================================
+// Scheduling & Availability
+// =============================================================================
+
+model PractitionerAvailability {
+  id              String    @id @default(uuid()) @db.Uuid
+  practitionerId  String    @db.Uuid
+  practitioner    User      @relation(fields: [practitionerId], references: [id], onDelete: Cascade)
+  dayOfWeek       DayOfWeek
+  startTime       String    // HH:mm format
+  endTime         String    // HH:mm format
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([practitionerId, dayOfWeek, startTime])
+  @@index([practitionerId])
+  @@index([dayOfWeek])
+  @@map("practitioner_availabilities")
+}
+
+model PractitionerBlackout {
+  id              String    @id @default(uuid()) @db.Uuid
+  practitionerId  String    @db.Uuid
+  practitioner    User      @relation(fields: [practitionerId], references: [id], onDelete: Cascade)
+  date            DateTime  @db.Date
+  startTime       String?   // HH:mm format, null = full day
+  endTime         String?   // HH:mm format, null = full day
+  reason          String?
+  createdAt       DateTime  @default(now())
+
+  @@index([practitionerId])
+  @@index([date])
+  @@map("practitioner_blackouts")
+}
+
+model BookingReminder {
+  id              String       @id @default(uuid()) @db.Uuid
+  bookingId       String       @db.Uuid
+  booking         Booking      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  reminderType    ReminderType
+  scheduledFor    DateTime
+  sent            Boolean      @default(false)
+  jobId           String?
+  createdAt       DateTime     @default(now())
+
+  @@index([bookingId])
+  @@index([scheduledFor])
+  @@index([sent])
+  @@map("booking_reminders")
 }
 
 // =============================================================================
