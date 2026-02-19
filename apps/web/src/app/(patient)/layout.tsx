@@ -14,11 +14,13 @@ import {
   Menu,
   MessageCircle,
   TestTube,
+  Video,
 } from 'lucide-react';
 
 const patientNavItems: SidebarItem[] = [
   { label: 'Dashboard', href: '/patient/dashboard', icon: LayoutDashboard },
   { label: 'Bookings', href: '/patient/bookings', icon: CalendarDays },
+  { label: 'Telehealth', href: '/patient/telehealth', icon: Video },
   { label: 'Messages', href: '/patient/messages', icon: MessageCircle },
   { label: 'Lab Results', href: '/patient/lab-results', icon: TestTube },
   { label: 'Medical Records', href: '/patient/records', icon: FileText },

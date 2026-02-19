@@ -14,11 +14,13 @@ import {
   MessageCircle,
   Clock,
   TestTube,
+  Video,
 } from 'lucide-react';
 
 const practitionerNavItems: SidebarItem[] = [
   { label: 'Dashboard', href: '/practitioner/dashboard', icon: LayoutDashboard },
   { label: 'Schedule', href: '/practitioner/schedule', icon: CalendarDays },
+  { label: 'Telehealth', href: '/practitioner/telehealth', icon: Video },
   { label: 'Availability', href: '/practitioner/availability', icon: Clock },
   { label: 'Messages', href: '/practitioner/messages', icon: MessageCircle },
   { label: 'Lab Orders', href: '/practitioner/lab-orders', icon: TestTube },
