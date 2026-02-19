@@ -176,7 +176,7 @@ export default function RegisterPage() {
         consentDataProcessing: data.consentDataProcessing,
         consentTerms: data.consentTerms,
       });
-      toast.success('Account created successfully! Welcome to Ndipaano!.');
+      toast.success('Account created successfully! Welcome to Ndipaano!');
       if (result?.memberId) {
         toast.success(`Your Member ID is ${result.memberId}`, { duration: 10000 });
       }
@@ -529,7 +529,7 @@ export default function RegisterPage() {
                 />
                 <span className="text-xs text-gray-600">
                   I consent to the verification of my professional credentials with HPCZ and authorize
-                  Ndipaano to perform background checks as required.
+                  Ndipaano! to perform background checks as required.
                 </span>
               </label>
               {practitionerForm.formState.errors.consentVerification && (

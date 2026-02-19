@@ -38,7 +38,7 @@ export default function ConsentPage() {
       type: 'data_processing',
       label: 'Data Processing',
       description:
-        'Allow Ndipaano to process your personal data for providing healthcare services, including matching you with practitioners and managing appointments.',
+        'Allow Ndipaano! to process your personal data for providing healthcare services, including matching you with practitioners and managing appointments.',
       granted: true,
       required: true,
     },
@@ -342,7 +342,7 @@ export default function ConsentPage() {
           <div className="mt-8 rounded-lg bg-gray-100 p-6">
             <h3 className="text-sm font-semibold text-gray-900">Data Controller</h3>
             <p className="mt-2 text-sm text-gray-600">
-              Ndipaano Medical Home Care Ltd. is the data controller for personal data
+              Ndipaano! Medical Home Care Ltd. is the data controller for personal data
               processed through this platform, registered under the Zambia Data Protection Act, 2021.
             </p>
             <p className="mt-2 text-sm text-gray-600">

@@ -133,7 +133,7 @@ export default function LoginPage() {
     <div>
       <h2 className="text-2xl font-bold text-gray-900">Sign In</h2>
       <p className="mt-2 text-sm text-gray-500">
-        Access your Ndipaano healthcare account.
+        Access your Ndipaano! healthcare account.
       </p>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5">

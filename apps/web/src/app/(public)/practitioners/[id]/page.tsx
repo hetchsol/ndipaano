@@ -196,14 +196,16 @@ export default function PractitionerProfilePage() {
   const fee = practitioner.baseConsultationFee;
 
   // Calculate rating breakdown from reviews if not provided by API
+  const reviews = Array.isArray(practitioner.reviews) ? practitioner.reviews : [];
   const ratingBreakdown = practitioner.ratingBreakdown || {
-    5: practitioner.reviews.filter((r) => r.rating === 5).length,
-    4: practitioner.reviews.filter((r) => r.rating === 4).length,
-    3: practitioner.reviews.filter((r) => r.rating === 3).length,
-    2: practitioner.reviews.filter((r) => r.rating === 2).length,
-    1: practitioner.reviews.filter((r) => r.rating === 1).length,
+    5: reviews.filter((r) => r.rating === 5).length,
+    4: reviews.filter((r) => r.rating === 4).length,
+    3: reviews.filter((r) => r.rating === 3).length,
+    2: reviews.filter((r) => r.rating === 2).length,
+    1: reviews.filter((r) => r.rating === 1).length,
   };
-  const totalRatings = Object.values(ratingBreakdown).reduce((a, b) => a + b, 0);
+  const breakdownValues = Object.values(ratingBreakdown);
+  const totalRatings = Array.isArray(breakdownValues) ? breakdownValues.reduce((a: number, b: number) => a + b, 0) : 0;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -459,9 +461,9 @@ export default function PractitionerProfilePage() {
                   </div>
 
                   {/* Individual Reviews */}
-                  {practitioner.reviews.length > 0 ? (
+                  {reviews.length > 0 ? (
                     <div className="space-y-4">
-                      {practitioner.reviews.map((review) => (
+                      {reviews.map((review) => (
                         <div
                           key={review.id}
                           className="border-b border-gray-100 pb-4 last:border-0 last:pb-0"

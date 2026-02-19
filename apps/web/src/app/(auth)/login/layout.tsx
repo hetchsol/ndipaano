@@ -15,7 +15,7 @@ export default function LoginLayout({
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/10">
             <Heart className="h-6 w-6 text-white" />
           </div>
-          <span className="text-2xl font-bold text-white">Ndipaano</span>
+          <span className="text-2xl font-bold text-white ndipaano-brand">Ndipaano!</span>
         </Link>
         <div>
           <h1 className="text-4xl font-bold text-white">Welcome Back</h1>
@@ -25,7 +25,7 @@ export default function LoginLayout({
           </p>
         </div>
         <p className="text-sm text-gray-400">
-          &copy; {new Date().getFullYear()} Ndipaano Medical Home Care
+          &copy; {new Date().getFullYear()} Ndipaano! Medical Home Care
         </p>
       </div>
 
@@ -37,7 +37,7 @@ export default function LoginLayout({
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-700">
                 <Heart className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-primary-700">Ndipaano</span>
+              <span className="text-xl font-bold text-primary-700 ndipaano-brand">Ndipaano!</span>
             </Link>
           </div>
           {children}
