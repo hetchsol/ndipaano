@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, PractitionerType, Gender, ServiceType, BookingStatus, PaymentStatus, PaymentMethod, ConsentType, DocumentType, NotificationChannel, DiagnosticTestCategory, DayOfWeek, MessageType } from '@prisma/client';
+import { PrismaClient, UserRole, PractitionerType, Gender, ServiceType, BookingStatus, PaymentStatus, PaymentMethod, ConsentType, DocumentType, NotificationChannel, DiagnosticTestCategory, DayOfWeek, MessageType, TelehealthSessionStatus, LabOrderStatus, LabOrderPriority, ResultInterpretation } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -7,6 +7,9 @@ async function main() {
   console.log('Seeding database...');
 
   // Clean existing data
+  await prisma.labResult.deleteMany();
+  await prisma.labOrder.deleteMany();
+  await prisma.telehealthSession.deleteMany();
   await prisma.bookingReminder.deleteMany();
   await prisma.message.deleteMany();
   await prisma.conversation.deleteMany();
@@ -417,12 +420,12 @@ async function main() {
     data: {
       patientId: patient2.id,
       practitionerId: doctor1.id,
-      serviceType: ServiceType.CHRONIC_DISEASE_MANAGEMENT,
+      serviceType: ServiceType.VIRTUAL_CONSULTATION,
       status: BookingStatus.COMPLETED,
       scheduledAt: new Date('2024-11-18T14:00:00Z'),
       startedAt: new Date('2024-11-18T14:05:00Z'),
       completedAt: new Date('2024-11-18T14:30:00Z'),
-      notes: 'Follow-up consultation for chronic condition',
+      notes: 'Follow-up virtual consultation for chronic condition',
     },
   });
 
@@ -927,6 +930,77 @@ async function main() {
   });
 
   console.log('Created sample conversations and messages');
+
+  // --- Telehealth Sessions ---
+  await prisma.telehealthSession.create({
+    data: {
+      bookingId: virtualBooking.id,
+      status: TelehealthSessionStatus.ENDED,
+      startedAt: new Date('2024-11-18T14:05:00Z'),
+      endedAt: new Date('2024-11-18T14:30:00Z'),
+      durationMinutes: 25,
+      recordingConsent: true,
+      practitionerNotes: 'Patient stable. Continue current medication. Follow up in 3 months.',
+      connectionQuality: 'GOOD',
+      endedBy: doctor1.id,
+    },
+  });
+
+  console.log('Created telehealth session');
+
+  // --- Lab Orders & Results ---
+  // Find the Blood Glucose (Fasting) test
+  const glucoseTest = createdTests.find((t) => t.code === 'GLU-F');
+  const fbcTest = createdTests.find((t) => t.code === 'FBC');
+
+  if (glucoseTest) {
+    // Completed lab order with result
+    const completedLabOrder = await prisma.labOrder.create({
+      data: {
+        patientId: patient2.id,
+        practitionerId: doctor1.id,
+        diagnosticTestId: glucoseTest.id,
+        bookingId: virtualBooking.id,
+        status: LabOrderStatus.COMPLETED,
+        priority: LabOrderPriority.ROUTINE,
+        clinicalNotes: 'Fasting blood glucose for diabetes monitoring',
+        sampleCollectedAt: new Date('2024-11-19T08:00:00Z'),
+        completedAt: new Date('2024-11-19T14:00:00Z'),
+      },
+    });
+
+    await prisma.labResult.create({
+      data: {
+        labOrderId: completedLabOrder.id,
+        resultValue: '5.2',
+        resultUnit: 'mmol/L',
+        referenceRangeMin: '3.9',
+        referenceRangeMax: '5.6',
+        interpretation: ResultInterpretation.NORMAL,
+        practitionerNotes: 'Fasting glucose within normal range. Good glycemic control.',
+        verifiedById: doctor1.id,
+        verifiedAt: new Date('2024-11-19T15:00:00Z'),
+      },
+    });
+
+    console.log('Created completed lab order with result');
+  }
+
+  if (fbcTest) {
+    // Pending lab order (ORDERED status)
+    await prisma.labOrder.create({
+      data: {
+        patientId: patient1.id,
+        practitionerId: doctor1.id,
+        diagnosticTestId: fbcTest.id,
+        status: LabOrderStatus.ORDERED,
+        priority: LabOrderPriority.URGENT,
+        clinicalNotes: 'Full blood count for suspected anemia investigation',
+      },
+    });
+
+    console.log('Created pending lab order');
+  }
 
   console.log('\n--- Seed Complete ---');
   console.log('Login credentials for all users: Password123!');

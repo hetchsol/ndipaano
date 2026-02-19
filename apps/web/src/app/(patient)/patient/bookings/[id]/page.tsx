@@ -48,7 +48,7 @@ interface BookingDetail {
     totalReviews: number;
   };
   dateTime: string;
-  type: 'home_visit' | 'virtual';
+  serviceType: string;
   status: string;
   address?: string;
   notes?: string;
@@ -274,7 +274,7 @@ export default function BookingDetailPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  {booking.type === 'virtual' ? (
+                  {booking.serviceType === 'VIRTUAL_CONSULTATION' ? (
                     <Video className="h-5 w-5 text-gray-400" />
                   ) : (
                     <MapPin className="h-5 w-5 text-gray-400" />
@@ -282,7 +282,7 @@ export default function BookingDetailPage() {
                   <div>
                     <p className="text-xs text-gray-500">Service Type</p>
                     <p className="font-medium text-gray-900 capitalize">
-                      {booking.type.replace('_', ' ')}
+                      {booking.serviceType.replace(/_/g, ' ').toLowerCase()}
                     </p>
                   </div>
                 </div>
@@ -334,17 +334,30 @@ export default function BookingDetailPage() {
                   Cancel Booking
                 </Button>
               )}
-              {canTrack && (
+              {canTrack && booking.serviceType !== 'VIRTUAL_CONSULTATION' && (
                 <Button variant="outline">
                   <Navigation className="mr-2 h-4 w-4" />
                   Track Location
+                </Button>
+              )}
+              {booking.serviceType === 'VIRTUAL_CONSULTATION' &&
+                ['confirmed', 'in_progress', 'in-progress', 'pending'].includes(booking.status.toLowerCase()) && (
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    // Navigate to telehealth room - session ID will be resolved there
+                    router.push(`/patient/telehealth/${bookingId}`);
+                  }}
+                >
+                  <Video className="mr-2 h-4 w-4" />
+                  Join Video Call
                 </Button>
               )}
             </CardFooter>
           </Card>
 
           {/* Map placeholder for tracking */}
-          {canTrack && booking.type === 'home_visit' && (
+          {canTrack && booking.serviceType !== 'VIRTUAL_CONSULTATION' && (
             <Card>
               <CardHeader>
                 <CardTitle>Live Tracking</CardTitle>

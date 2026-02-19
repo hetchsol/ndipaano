@@ -28,7 +28,7 @@ interface Booking {
     phone: string;
   };
   dateTime: string;
-  type: 'home_visit' | 'virtual';
+  serviceType: string;
   status: string;
   address?: string;
   notes?: string;
@@ -114,7 +114,7 @@ export default function SchedulePage() {
             <Button size="sm" onClick={() => handleStatusUpdate(booking.id, 'completed')}>
               <CheckCircle className="mr-1 h-3 w-3" /> Complete
             </Button>
-            {booking.type === 'virtual' && (
+            {booking.serviceType === 'VIRTUAL_CONSULTATION' && (
               <Button size="sm" variant="outline">
                 <Phone className="mr-1 h-3 w-3" /> Call Patient
               </Button>
@@ -181,12 +181,12 @@ export default function SchedulePage() {
                                 {formatDate(booking.dateTime, 'time')}
                               </span>
                               <span className="flex items-center gap-1 capitalize">
-                                {booking.type === 'virtual' ? (
+                                {booking.serviceType === 'VIRTUAL_CONSULTATION' ? (
                                   <Video className="h-4 w-4" />
                                 ) : (
                                   <MapPin className="h-4 w-4" />
                                 )}
-                                {booking.type.replace('_', ' ')}
+                                {booking.serviceType.replace(/_/g, ' ').toLowerCase()}
                               </span>
                             </div>
                             {booking.patient.phone && (

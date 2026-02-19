@@ -14,7 +14,7 @@ import {
   TableHead,
   TableCell,
 } from '../../../../components/ui/table';
-import { bookingsAPI, paymentsAPI } from '../../../../lib/api';
+import { bookingsAPI, paymentsAPI, telehealthAPI } from '../../../../lib/api';
 import { formatDate, formatCurrency, getStatusColor } from '../../../../lib/utils';
 import { toast } from 'sonner';
 import {
@@ -35,7 +35,7 @@ interface Booking {
   id: string;
   patient: { firstName: string; lastName: string; phone: string };
   dateTime: string;
-  type: 'home_visit' | 'virtual';
+  serviceType: string;
   status: string;
   address?: string;
   notes?: string;
@@ -245,12 +245,12 @@ export default function PractitionerDashboard() {
                     </TableCell>
                     <TableCell>
                       <span className="flex items-center gap-1 text-sm capitalize text-gray-600">
-                        {req.type === 'virtual' ? (
+                        {req.serviceType === 'VIRTUAL_CONSULTATION' ? (
                           <Video className="h-3 w-3" />
                         ) : (
                           <MapPin className="h-3 w-3" />
                         )}
-                        {req.type.replace('_', ' ')}
+                        {req.serviceType.replace(/_/g, ' ').toLowerCase()}
                       </span>
                     </TableCell>
                     <TableCell>
@@ -353,12 +353,12 @@ export default function PractitionerDashboard() {
                             </p>
                             <div className="mt-1 flex items-center gap-2 text-xs text-gray-500">
                               <span className="flex items-center gap-1 capitalize">
-                                {apt.type === 'virtual' ? (
+                                {apt.serviceType === 'VIRTUAL_CONSULTATION' ? (
                                   <Video className="h-3 w-3" />
                                 ) : (
                                   <MapPin className="h-3 w-3" />
                                 )}
-                                {apt.type.replace('_', ' ')}
+                                {apt.serviceType.replace(/_/g, ' ').toLowerCase()}
                               </span>
                               {apt.address && (
                                 <span className="text-gray-400 truncate max-w-[200px]">
@@ -366,6 +366,24 @@ export default function PractitionerDashboard() {
                                 </span>
                               )}
                             </div>
+                            {apt.serviceType === 'VIRTUAL_CONSULTATION' && ['confirmed', 'pending'].includes(apt.status.toLowerCase()) && (
+                              <Button
+                                size="sm"
+                                className="mt-2"
+                                onClick={async (e) => {
+                                  e.stopPropagation();
+                                  try {
+                                    const res = await telehealthAPI.createSession({ bookingId: apt.id });
+                                    const session = res.data.data || res.data;
+                                    window.location.href = `/practitioner/telehealth/${session.id}`;
+                                  } catch {
+                                    toast.error('Failed to create telehealth session');
+                                  }
+                                }}
+                              >
+                                <Video className="mr-1 h-3 w-3" /> Start Video Call
+                              </Button>
+                            )}
                           </div>
                           <Badge className={getStatusColor(apt.status)}>{apt.status}</Badge>
                         </div>

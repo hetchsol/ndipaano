@@ -27,7 +27,7 @@ interface Booking {
     avatar?: string;
   };
   dateTime: string;
-  type: 'home_visit' | 'virtual';
+  serviceType: string;
   status: string;
   address?: string;
   consultationFee: number;
@@ -74,7 +74,7 @@ export default function BookingsPage() {
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-50">
-                {booking.type === 'virtual' ? (
+                {booking.serviceType === 'VIRTUAL_CONSULTATION' ? (
                   <Video className="h-5 w-5 text-primary-700" />
                 ) : (
                   <MapPin className="h-5 w-5 text-primary-700" />
@@ -102,12 +102,12 @@ export default function BookingsPage() {
               {formatDate(booking.dateTime, 'time')}
             </span>
             <span className="flex items-center gap-1 capitalize">
-              {booking.type === 'virtual' ? (
+              {booking.serviceType === 'VIRTUAL_CONSULTATION' ? (
                 <Video className="h-4 w-4" />
               ) : (
                 <MapPin className="h-4 w-4" />
               )}
-              {booking.type.replace('_', ' ')}
+              {booking.serviceType.replace(/_/g, ' ').toLowerCase()}
             </span>
           </div>
 

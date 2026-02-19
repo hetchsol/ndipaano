@@ -7,7 +7,7 @@ import { SlotPicker } from '@/components/scheduling/slot-picker';
 import { practitionersAPI, bookingsAPI } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, ArrowRight, Check, Calendar, Clock, MapPin } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, Calendar, Clock, MapPin, Video } from 'lucide-react';
 
 interface Practitioner {
   id: string;
@@ -40,6 +40,7 @@ function NewBookingPage() {
   const [selectedSlot, setSelectedSlot] = useState<{ startTime: string; endTime: string } | null>(null);
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
+  const [visitType, setVisitType] = useState<'HOME_VISIT' | 'VIRTUAL_CONSULTATION'>('HOME_VISIT');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,15 +66,16 @@ function NewBookingPage() {
   }, [step]);
 
   const handleSubmit = async () => {
-    if (!selectedPractitioner || !selectedSlot || !address) return;
+    if (!selectedPractitioner || !selectedSlot) return;
+    if (visitType === 'HOME_VISIT' && !address) return;
     setIsSubmitting(true);
     setError('');
     try {
       await bookingsAPI.create({
         practitionerId: selectedPractitioner.id,
-        dateTime: selectedSlot.startTime,
-        type: 'home_visit',
-        address,
+        scheduledAt: selectedSlot.startTime,
+        serviceType: visitType,
+        address: visitType === 'HOME_VISIT' ? address : undefined,
         notes: notes || undefined,
       });
       router.push('/patient/bookings');
@@ -255,16 +257,50 @@ function NewBookingPage() {
           </div>
 
           <div className="space-y-4 max-w-lg">
+            {/* Visit Type Toggle */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Address *
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Consultation Type
               </label>
-              <Input
-                placeholder="Enter your address for the home visit"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-              />
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setVisitType('HOME_VISIT')}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
+                    visitType === 'HOME_VISIT'
+                      ? 'border-primary-700 bg-primary-50 text-primary-700'
+                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                  }`}
+                >
+                  <MapPin className="h-4 w-4" />
+                  Home Visit
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setVisitType('VIRTUAL_CONSULTATION')}
+                  className={`flex flex-1 items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
+                    visitType === 'VIRTUAL_CONSULTATION'
+                      ? 'border-primary-700 bg-primary-50 text-primary-700'
+                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                  }`}
+                >
+                  <Video className="h-4 w-4" />
+                  Virtual Consultation
+                </button>
+              </div>
             </div>
+            {visitType === 'HOME_VISIT' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Address *
+                </label>
+                <Input
+                  placeholder="Enter your address for the home visit"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                />
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Notes (optional)
@@ -282,7 +318,7 @@ function NewBookingPage() {
             )}
             <Button
               onClick={handleSubmit}
-              disabled={isSubmitting || !address}
+              disabled={isSubmitting || (visitType === 'HOME_VISIT' && !address)}
               className="w-full"
             >
               {isSubmitting ? 'Booking...' : 'Confirm Booking'}

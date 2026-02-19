@@ -23,6 +23,8 @@ import { HealthModule } from './modules/health/health.module';
 import { DiagnosticTestsModule } from './modules/diagnostic-tests/diagnostic-tests.module';
 import { SchedulingModule } from './modules/scheduling/scheduling.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { TelehealthModule } from './modules/telehealth/telehealth.module';
+import { LabResultsModule } from './modules/lab-results/lab-results.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -78,6 +80,8 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     DiagnosticTestsModule,
     SchedulingModule,
     ChatModule,
+    TelehealthModule,
+    LabResultsModule,
   ],
   controllers: [],
   providers: [

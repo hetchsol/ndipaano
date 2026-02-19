@@ -128,11 +128,10 @@ export const bookingsAPI = {
 
   create: (data: {
     practitionerId: string;
-    dateTime: string;
-    type: 'home_visit' | 'virtual';
+    scheduledAt: string;
+    serviceType: string;
     address?: string;
     notes?: string;
-    symptoms?: string[];
   }) => api.post('/bookings', data),
 
   cancel: (id: string, reason?: string) =>
@@ -433,6 +432,44 @@ export const chatAPI = {
 
   getUploadUrl: (data: { fileName: string; mimeType: string; fileSize: number }) =>
     api.post('/chat/upload-url', data),
+};
+
+// --- Telehealth API ---
+export const telehealthAPI = {
+  createSession: (data: { bookingId: string }) =>
+    api.post('/telehealth/sessions', data),
+  getSession: (id: string) =>
+    api.get(`/telehealth/sessions/${id}`),
+  startSession: (id: string) =>
+    api.patch(`/telehealth/sessions/${id}/start`),
+  endSession: (id: string, data?: { practitionerNotes?: string }) =>
+    api.patch(`/telehealth/sessions/${id}/end`, data),
+  recordConsent: (id: string, data: { recordingConsent: boolean }) =>
+    api.patch(`/telehealth/sessions/${id}/consent`, data),
+  getMySessions: (params?: { page?: number; limit?: number }) =>
+    api.get('/telehealth/my-sessions', { params }),
+};
+
+// --- Lab Results API ---
+export const labResultsAPI = {
+  createOrder: (data: { patientId: string; diagnosticTestId: string; bookingId?: string; priority?: string; clinicalNotes?: string }) =>
+    api.post('/lab-results/orders', data),
+  listOrders: (params?: { page?: number; limit?: number; status?: string; patientId?: string }) =>
+    api.get('/lab-results/orders', { params }),
+  getOrder: (id: string) =>
+    api.get(`/lab-results/orders/${id}`),
+  updateOrderStatus: (id: string, data: { status: string; cancelledReason?: string }) =>
+    api.patch(`/lab-results/orders/${id}/status`, data),
+  createResult: (data: { labOrderId: string; resultValue: string; resultUnit?: string; referenceRangeMin?: string; referenceRangeMax?: string; referenceRangeText?: string; interpretation: string; practitionerNotes?: string }) =>
+    api.post('/lab-results/results', data),
+  getResult: (id: string) =>
+    api.get(`/lab-results/results/${id}`),
+  getPatientOrders: (params?: { page?: number; limit?: number; status?: string }) =>
+    api.get('/lab-results/patient/orders', { params }),
+  getPatientResults: (params?: { page?: number; limit?: number }) =>
+    api.get('/lab-results/patient/results', { params }),
+  getResultTrend: (testId: string) =>
+    api.get(`/lab-results/patient/trends/${testId}`),
 };
 
 export default api;

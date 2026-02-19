@@ -26,7 +26,7 @@ interface Booking {
   id: string;
   practitioner: { firstName: string; lastName: string; type: string };
   dateTime: string;
-  type: 'home_visit' | 'virtual';
+  serviceType: string;
   status: string;
   address?: string;
 }
@@ -153,7 +153,7 @@ export default function PatientDashboard() {
                     <Link key={booking.id} href={`/patient/bookings/${booking.id}`}>
                       <div className="flex items-center gap-4 rounded-lg border border-gray-100 p-4 transition-colors hover:bg-gray-50">
                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-50">
-                          {booking.type === 'virtual' ? (
+                          {booking.serviceType === 'VIRTUAL_CONSULTATION' ? (
                             <Video className="h-5 w-5 text-primary-700" />
                           ) : (
                             <MapPin className="h-5 w-5 text-primary-700" />
@@ -172,7 +172,7 @@ export default function PatientDashboard() {
                               {formatDate(booking.dateTime)} at {formatDate(booking.dateTime, 'time')}
                             </span>
                             <span className="capitalize">
-                              {booking.type.replace('_', ' ')}
+                              {booking.serviceType.replace(/_/g, ' ').toLowerCase()}
                             </span>
                           </div>
                         </div>
