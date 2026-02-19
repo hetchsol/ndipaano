@@ -6,6 +6,7 @@ import {
   Delete,
   Body,
   Param,
+  Query,
   ParseUUIDPipe,
   UseGuards,
 } from '@nestjs/common';
@@ -15,6 +16,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiParam,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import {
@@ -22,9 +24,15 @@ import {
   UpdatePatientProfileDto,
   AddFamilyMemberDto,
   CreateDataSubjectRequestDto,
+  SearchPatientsDto,
 } from './dto/update-profile.dto';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import {
+  Roles,
+  PRACTITIONER_ROLES,
+} from '../../common/decorators/roles.decorator';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -32,6 +40,20 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Get('patients')
+  @UseGuards(RolesGuard)
+  @Roles(...PRACTITIONER_ROLES)
+  @ApiOperation({ summary: 'Search patients by name or UUID' })
+  @ApiQuery({ name: 'search', required: false, description: 'Patient name or UUID' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiResponse({ status: 200, description: 'Patients retrieved successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden – practitioner role required' })
+  async searchPatients(@Query() dto: SearchPatientsDto) {
+    return this.usersService.searchPatients(dto);
+  }
 
   @Get('profile')
   @ApiOperation({ summary: 'Get own profile' })

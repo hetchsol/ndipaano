@@ -264,6 +264,9 @@ export const usersAPI = {
       headers: { 'Content-Type': 'multipart/form-data' },
     }),
 
+  searchPatients: (params?: { search?: string; page?: number; limit?: number }) =>
+    api.get('/users/patients', { params }),
+
   getConsents: () => api.get('/users/consents'),
 
   updateConsent: (data: { type: string; granted: boolean }) =>

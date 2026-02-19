@@ -4,9 +4,13 @@ import {
   IsEnum,
   IsBoolean,
   IsDateString,
+  IsInt,
+  Min,
+  Max,
   MinLength,
   MaxLength,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Gender, DataRequestType } from '@prisma/client';
 
@@ -189,6 +193,31 @@ export class AddFamilyMemberDto {
   })
   @IsBoolean()
   consentGiven: boolean;
+}
+
+export class SearchPatientsDto {
+  @ApiPropertyOptional({
+    description: 'Search by patient name or UUID',
+    example: 'Mwamba',
+  })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({ description: 'Page number', default: 1 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @ApiPropertyOptional({ description: 'Results per page', default: 20 })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number = 20;
 }
 
 export class CreateDataSubjectRequestDto {

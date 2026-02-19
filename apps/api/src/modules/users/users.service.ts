@@ -10,11 +10,68 @@ import {
   UpdatePatientProfileDto,
   AddFamilyMemberDto,
   CreateDataSubjectRequestDto,
+  SearchPatientsDto,
 } from './dto/update-profile.dto';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Search patients by name or UUID. Practitioners use this to find patients
+   * when creating lab orders or other clinical workflows.
+   */
+  async searchPatients(dto: SearchPatientsDto) {
+    const { search, page = 1, limit = 20 } = dto;
+    const skip = (page - 1) * limit;
+
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isUUID = search && uuidRegex.test(search.trim());
+
+    const where: any = {
+      role: 'PATIENT',
+      isActive: true,
+    };
+
+    if (search && search.trim()) {
+      if (isUUID) {
+        where.id = search.trim();
+      } else {
+        where.OR = [
+          { firstName: { contains: search.trim(), mode: 'insensitive' } },
+          { lastName: { contains: search.trim(), mode: 'insensitive' } },
+        ];
+      }
+    }
+
+    const [patients, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          email: true,
+        },
+        skip,
+        take: limit,
+        orderBy: { firstName: 'asc' },
+      }),
+      this.prisma.user.count({ where }),
+    ]);
+
+    return {
+      data: patients,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
 
   /**
    * Find a user by ID, including patient and practitioner profiles.
