@@ -59,7 +59,24 @@ function NewBookingPage() {
   useEffect(() => {
     if (step === 1) {
       practitionersAPI.search({ isAvailable: true, limit: 50 }).then((res) => {
-        const data = res.data.data?.data || res.data.data || [];
+        const raw = res.data.data?.data || res.data.data || [];
+        // The search endpoint returns PractitionerProfile objects with nested user.
+        // Flatten them so id=user.id, firstName/lastName are top-level.
+        const data = raw.map((p: any) => {
+          if (p.user && !p.firstName) {
+            return {
+              id: p.user.id,
+              firstName: p.user.firstName,
+              lastName: p.user.lastName,
+              practitionerProfile: {
+                practitionerType: p.practitionerType,
+                ratingAvg: p.ratingAvg,
+                baseConsultationFee: p.baseConsultationFee,
+              },
+            };
+          }
+          return p;
+        });
         setPractitioners(data);
       }).catch(() => {});
     }
