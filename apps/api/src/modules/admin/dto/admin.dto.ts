@@ -193,3 +193,53 @@ export class CreatePharmacyDto {
 // =============================================================================
 
 export class UpdatePharmacyDto extends PartialType(CreatePharmacyDto) {}
+
+// =============================================================================
+// CreateInventoryItemDto
+// =============================================================================
+
+export class CreateInventoryItemDto {
+  @ApiProperty({
+    description: 'Medication name',
+    example: 'Amoxicillin 500mg',
+  })
+  @IsString()
+  @MinLength(2)
+  @MaxLength(300)
+  medicationName: string;
+
+  @ApiPropertyOptional({
+    description: 'Generic name of the medication',
+    example: 'Amoxicillin',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(300)
+  genericName?: string;
+
+  @ApiProperty({
+    description: 'Unit price in ZMW',
+    example: 25.5,
+  })
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  unitPrice: number;
+
+  @ApiPropertyOptional({
+    description: 'Quantity currently in stock',
+    example: 100,
+    default: 0,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  quantityInStock?: number;
+}
+
+// =============================================================================
+// UpdateInventoryItemDto
+// =============================================================================
+
+export class UpdateInventoryItemDto extends PartialType(CreateInventoryItemDto) {}

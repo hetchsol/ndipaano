@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Param,
   Query,
   Body,
@@ -23,6 +24,8 @@ import {
   AnalyticsPeriodDto,
   CreatePharmacyDto,
   UpdatePharmacyDto,
+  CreateInventoryItemDto,
+  UpdateInventoryItemDto,
 } from './dto/admin.dto';
 
 @ApiTags('Admin')
@@ -153,5 +156,65 @@ export class AdminController {
     @Query('isActive') isActive: boolean,
   ) {
     return this.adminService.togglePharmacyActive(id, isActive);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Pharmacy Inventory
+  // ---------------------------------------------------------------------------
+
+  @Get('pharmacies/:id/inventory')
+  @Roles(UserRole.ADMIN, UserRole.SUPER_ADMIN, UserRole.PHARMACIST)
+  @ApiOperation({ summary: 'List pharmacy inventory items' })
+  @ApiParam({ name: 'id', description: 'Pharmacy UUID' })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiResponse({ status: 200, description: 'Paginated list of inventory items' })
+  async getPharmacyInventory(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+  ) {
+    return this.adminService.getPharmacyInventory(id, { page, limit, search });
+  }
+
+  @Post('pharmacies/:id/inventory')
+  @ApiOperation({ summary: 'Add inventory item to pharmacy' })
+  @ApiParam({ name: 'id', description: 'Pharmacy UUID' })
+  @ApiResponse({ status: 201, description: 'Inventory item created' })
+  @ApiResponse({ status: 400, description: 'Duplicate medication name' })
+  async createInventoryItem(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateInventoryItemDto,
+  ) {
+    return this.adminService.createInventoryItem(id, dto);
+  }
+
+  @Patch('pharmacies/:id/inventory/:itemId')
+  @ApiOperation({ summary: 'Update inventory item' })
+  @ApiParam({ name: 'id', description: 'Pharmacy UUID' })
+  @ApiParam({ name: 'itemId', description: 'Inventory item UUID' })
+  @ApiResponse({ status: 200, description: 'Inventory item updated' })
+  @ApiResponse({ status: 404, description: 'Item not found' })
+  async updateInventoryItem(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('itemId', ParseUUIDPipe) itemId: string,
+    @Body() dto: UpdateInventoryItemDto,
+  ) {
+    return this.adminService.updateInventoryItem(id, itemId, dto);
+  }
+
+  @Delete('pharmacies/:id/inventory/:itemId')
+  @ApiOperation({ summary: 'Delete inventory item' })
+  @ApiParam({ name: 'id', description: 'Pharmacy UUID' })
+  @ApiParam({ name: 'itemId', description: 'Inventory item UUID' })
+  @ApiResponse({ status: 200, description: 'Inventory item deleted' })
+  @ApiResponse({ status: 404, description: 'Item not found' })
+  async deleteInventoryItem(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('itemId', ParseUUIDPipe) itemId: string,
+  ) {
+    return this.adminService.deleteInventoryItem(id, itemId);
   }
 }

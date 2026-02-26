@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, PractitionerType, Gender, ServiceType, BookingStatus, PaymentStatus, PaymentMethod, ConsentType, DocumentType, NotificationChannel, DiagnosticTestCategory, DayOfWeek, MessageType, TelehealthSessionStatus, LabOrderStatus, LabOrderPriority, ResultInterpretation } from '@prisma/client';
+import { PrismaClient, UserRole, PractitionerType, Gender, ServiceType, BookingStatus, PaymentStatus, PaymentMethod, ConsentType, DocumentType, NotificationChannel, DiagnosticTestCategory, DayOfWeek, MessageType, TelehealthSessionStatus, LabOrderStatus, LabOrderPriority, ResultInterpretation, MedicationOrderStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -7,6 +7,8 @@ async function main() {
   console.log('Seeding database...');
 
   // Clean existing data
+  await prisma.medicationOrder.deleteMany();
+  await prisma.pharmacyInventory.deleteMany();
   await prisma.labResult.deleteMany();
   await prisma.labOrder.deleteMany();
   await prisma.telehealthSession.deleteMany();
@@ -376,6 +378,31 @@ async function main() {
   });
 
   console.log('Created pharmacies');
+
+  // --- Pharmacy Inventory ---
+  await prisma.pharmacyInventory.createMany({
+    data: [
+      // Link Pharmacy inventory
+      { pharmacyId: pharmacy1.id, medicationName: 'Amlodipine', genericName: 'Amlodipine Besylate', unitPrice: 15.00, quantityInStock: 200 },
+      { pharmacyId: pharmacy1.id, medicationName: 'Metformin', genericName: 'Metformin Hydrochloride', unitPrice: 8.50, quantityInStock: 500 },
+      { pharmacyId: pharmacy1.id, medicationName: 'Amoxicillin', genericName: 'Amoxicillin Trihydrate', unitPrice: 12.00, quantityInStock: 300 },
+      { pharmacyId: pharmacy1.id, medicationName: 'Paracetamol', genericName: 'Acetaminophen', unitPrice: 5.00, quantityInStock: 1000 },
+      { pharmacyId: pharmacy1.id, medicationName: 'Ibuprofen', genericName: 'Ibuprofen', unitPrice: 7.50, quantityInStock: 400 },
+      { pharmacyId: pharmacy1.id, medicationName: 'Omeprazole', genericName: 'Omeprazole', unitPrice: 18.00, quantityInStock: 150 },
+      { pharmacyId: pharmacy1.id, medicationName: 'Atorvastatin', genericName: 'Atorvastatin Calcium', unitPrice: 25.00, quantityInStock: 100 },
+      { pharmacyId: pharmacy1.id, medicationName: 'Ciprofloxacin', genericName: 'Ciprofloxacin Hydrochloride', unitPrice: 20.00, quantityInStock: 120 },
+
+      // Health Point Pharmacy inventory
+      { pharmacyId: pharmacy2.id, medicationName: 'Amlodipine', genericName: 'Amlodipine Besylate', unitPrice: 16.50, quantityInStock: 150 },
+      { pharmacyId: pharmacy2.id, medicationName: 'Metformin', genericName: 'Metformin Hydrochloride', unitPrice: 9.00, quantityInStock: 400 },
+      { pharmacyId: pharmacy2.id, medicationName: 'Amoxicillin', genericName: 'Amoxicillin Trihydrate', unitPrice: 11.50, quantityInStock: 250 },
+      { pharmacyId: pharmacy2.id, medicationName: 'Paracetamol', genericName: 'Acetaminophen', unitPrice: 4.50, quantityInStock: 800 },
+      { pharmacyId: pharmacy2.id, medicationName: 'Losartan', genericName: 'Losartan Potassium', unitPrice: 22.00, quantityInStock: 80 },
+      { pharmacyId: pharmacy2.id, medicationName: 'Hydrochlorothiazide', genericName: 'Hydrochlorothiazide', unitPrice: 10.00, quantityInStock: 200 },
+    ],
+  });
+
+  console.log('Created pharmacy inventory items');
 
   // --- Bookings ---
   const patientProfile1 = await prisma.patientProfile.findUnique({

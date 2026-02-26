@@ -9,6 +9,7 @@ import {
   CalendarDays,
   FileText,
   Pill,
+  Package,
   CreditCard,
   Settings,
   Menu,
@@ -25,6 +26,7 @@ const patientNavItems: SidebarItem[] = [
   { label: 'Lab Results', href: '/patient/lab-results', icon: TestTube },
   { label: 'Medical Records', href: '/patient/records', icon: FileText },
   { label: 'Prescriptions', href: '/patient/prescriptions', icon: Pill },
+  { label: 'Orders', href: '/patient/medication-orders', icon: Package },
   { label: 'Rates', href: '/patient/rates', icon: CreditCard },
   { label: 'Settings', href: '/consent', icon: Settings },
 ];

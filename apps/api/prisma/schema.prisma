@@ -190,6 +190,16 @@ enum ResultInterpretation {
   CRITICAL
 }
 
+enum MedicationOrderStatus {
+  PENDING
+  CONFIRMED
+  PREPARING
+  READY
+  DISPATCHED
+  DELIVERED
+  CANCELLED
+}
+
 // =============================================================================
 // Models
 // =============================================================================
@@ -253,6 +263,8 @@ model User {
   // Lab orders
   patientLabOrders           LabOrder[]                 @relation("PatientLabOrders")
   practitionerLabOrders      LabOrder[]                 @relation("PractitionerLabOrders")
+  // Medication orders as patient
+  patientMedicationOrders    MedicationOrder[]           @relation("PatientMedicationOrders")
 
   @@index([email])
   @@index([phone])
@@ -484,6 +496,8 @@ model Prescription {
   notes                       String?
   createdAt                   DateTime      @default(now())
 
+  medicationOrders MedicationOrder[]
+
   @@index([medicalRecordId])
   @@index([patientId])
   @@index([practitionerId])
@@ -669,7 +683,9 @@ model Pharmacy {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  prescriptions Prescription[]
+  prescriptions    Prescription[]
+  inventory        PharmacyInventory[]
+  medicationOrders MedicationOrder[]
 
   @@index([city])
   @@index([isActive])
@@ -909,4 +925,61 @@ model LabResult {
   @@index([labOrderId])
   @@index([interpretation])
   @@map("lab_results")
+}
+
+// =============================================================================
+// Pharmacy Inventory & Medication Orders (Phase 3.1)
+// =============================================================================
+
+model PharmacyInventory {
+  id              String   @id @default(uuid()) @db.Uuid
+  pharmacyId      String   @db.Uuid
+  pharmacy        Pharmacy @relation(fields: [pharmacyId], references: [id], onDelete: Cascade)
+  medicationName  String
+  genericName     String?
+  unitPrice       Decimal  @db.Decimal(10, 2)
+  quantityInStock Int      @default(0)
+  isAvailable     Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([pharmacyId, medicationName])
+  @@index([pharmacyId])
+  @@index([medicationName])
+  @@map("pharmacy_inventory")
+}
+
+model MedicationOrder {
+  id               String                @id @default(uuid()) @db.Uuid
+  prescriptionId   String                @db.Uuid
+  prescription     Prescription          @relation(fields: [prescriptionId], references: [id])
+  patientId        String                @db.Uuid
+  patient          User                  @relation("PatientMedicationOrders", fields: [patientId], references: [id])
+  pharmacyId       String                @db.Uuid
+  pharmacy         Pharmacy              @relation(fields: [pharmacyId], references: [id])
+  status           MedicationOrderStatus @default(PENDING)
+  quantity         Int
+  unitPrice        Decimal               @db.Decimal(10, 2)
+  totalAmount      Decimal               @db.Decimal(10, 2)
+  deliveryAddress  String?
+  deliveryFee      Decimal?              @db.Decimal(10, 2)
+  paymentMethod    PaymentMethod?
+  paymentReference String?
+  paymentStatus    PaymentStatus         @default(PENDING)
+  notes            String?
+  cancelledBy      String?               @db.Uuid
+  cancelledReason  String?
+  confirmedAt      DateTime?
+  readyAt          DateTime?
+  dispatchedAt     DateTime?
+  deliveredAt      DateTime?
+  cancelledAt      DateTime?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  @@index([patientId])
+  @@index([pharmacyId])
+  @@index([prescriptionId])
+  @@index([status])
+  @@map("medication_orders")
 }

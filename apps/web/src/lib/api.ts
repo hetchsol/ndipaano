@@ -475,4 +475,32 @@ export const labResultsAPI = {
     api.get(`/lab-results/patient/trends/${testId}`),
 };
 
+// --- Medication Orders API ---
+export const medicationOrdersAPI = {
+  create: (data: {
+    prescriptionId: string;
+    pharmacyId: string;
+    deliveryAddress?: string;
+    paymentMethod?: string;
+    notes?: string;
+  }) => api.post('/medication-orders', data),
+
+  list: (params?: { page?: number; limit?: number; status?: string }) =>
+    api.get('/medication-orders', { params }),
+
+  getById: (id: string) => api.get(`/medication-orders/${id}`),
+
+  cancel: (id: string, reason?: string) =>
+    api.patch(`/medication-orders/${id}/cancel`, { reason }),
+};
+
+// --- Pharmacies API (public) ---
+export const pharmaciesAPI = {
+  searchNearby: (params?: { city?: string; latitude?: number; longitude?: number; radiusKm?: number; page?: number; limit?: number }) =>
+    api.get('/pharmacies/nearby', { params }),
+
+  getInventory: (pharmacyId: string) =>
+    api.get(`/pharmacies/${pharmacyId}/inventory`),
+};
+
 export default api;

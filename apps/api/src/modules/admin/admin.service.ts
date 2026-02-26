@@ -11,6 +11,8 @@ import {
   AnalyticsPeriodDto,
   CreatePharmacyDto,
   UpdatePharmacyDto,
+  CreateInventoryItemDto,
+  UpdateInventoryItemDto,
 } from './dto/admin.dto';
 
 @Injectable()
@@ -518,5 +520,116 @@ export class AdminService {
       message: `Pharmacy ${isActive ? 'activated' : 'deactivated'} successfully`,
       pharmacy: updated,
     };
+  }
+
+  // ===========================================================================
+  // Pharmacy Inventory
+  // ===========================================================================
+
+  async getPharmacyInventory(
+    pharmacyId: string,
+    query: { page?: number; limit?: number; search?: string },
+  ) {
+    const pharmacy = await this.prisma.pharmacy.findUnique({
+      where: { id: pharmacyId },
+    });
+    if (!pharmacy) {
+      throw new NotFoundException('Pharmacy not found');
+    }
+
+    const page = query.page || 1;
+    const limit = query.limit || 20;
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.PharmacyInventoryWhereInput = { pharmacyId };
+    if (query.search) {
+      where.OR = [
+        { medicationName: { contains: query.search, mode: 'insensitive' } },
+        { genericName: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.pharmacyInventory.findMany({
+        where,
+        skip,
+        take: limit,
+        orderBy: { medicationName: 'asc' },
+      }),
+      this.prisma.pharmacyInventory.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async createInventoryItem(pharmacyId: string, dto: CreateInventoryItemDto) {
+    const pharmacy = await this.prisma.pharmacy.findUnique({
+      where: { id: pharmacyId },
+    });
+    if (!pharmacy) {
+      throw new NotFoundException('Pharmacy not found');
+    }
+
+    const existing = await this.prisma.pharmacyInventory.findUnique({
+      where: {
+        pharmacyId_medicationName: {
+          pharmacyId,
+          medicationName: dto.medicationName,
+        },
+      },
+    });
+    if (existing) {
+      throw new BadRequestException(
+        `Inventory item "${dto.medicationName}" already exists for this pharmacy`,
+      );
+    }
+
+    return this.prisma.pharmacyInventory.create({
+      data: {
+        pharmacyId,
+        medicationName: dto.medicationName,
+        genericName: dto.genericName,
+        unitPrice: dto.unitPrice,
+        quantityInStock: dto.quantityInStock ?? 0,
+      },
+    });
+  }
+
+  async updateInventoryItem(
+    pharmacyId: string,
+    itemId: string,
+    dto: UpdateInventoryItemDto,
+  ) {
+    const item = await this.prisma.pharmacyInventory.findFirst({
+      where: { id: itemId, pharmacyId },
+    });
+    if (!item) {
+      throw new NotFoundException('Inventory item not found');
+    }
+
+    return this.prisma.pharmacyInventory.update({
+      where: { id: itemId },
+      data: {
+        ...(dto.medicationName !== undefined && { medicationName: dto.medicationName }),
+        ...(dto.genericName !== undefined && { genericName: dto.genericName }),
+        ...(dto.unitPrice !== undefined && { unitPrice: dto.unitPrice }),
+        ...(dto.quantityInStock !== undefined && { quantityInStock: dto.quantityInStock }),
+      },
+    });
+  }
+
+  async deleteInventoryItem(pharmacyId: string, itemId: string) {
+    const item = await this.prisma.pharmacyInventory.findFirst({
+      where: { id: itemId, pharmacyId },
+    });
+    if (!item) {
+      throw new NotFoundException('Inventory item not found');
+    }
+
+    await this.prisma.pharmacyInventory.delete({ where: { id: itemId } });
+    return { message: 'Inventory item deleted successfully' };
   }
 }

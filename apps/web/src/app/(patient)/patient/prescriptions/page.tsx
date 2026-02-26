@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { prescriptionsAPI } from '../../../../lib/api';
 import { formatDate } from '../../../../lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '../../../../components/ui/card';
@@ -18,6 +19,7 @@ import {
 import {
   Pill,
   RefreshCw,
+  ShoppingCart,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -53,11 +55,13 @@ export default function PrescriptionsPage() {
     fetchPrescriptions();
   }, []);
 
+  const router = useRouter();
+
   async function fetchPrescriptions() {
     setIsLoading(true);
     try {
       const response = await prescriptionsAPI.list({ limit: 50 });
-      setPrescriptions(response.data.data?.prescriptions || []);
+      setPrescriptions(response.data.data?.data || response.data.data || []);
     } catch {
       setPrescriptions([]);
     } finally {
@@ -176,16 +180,28 @@ export default function PrescriptionsPage() {
                   <TableCell>{getStatusBadge(rx.status)}</TableCell>
                   <TableCell>{getDispensedBadge(rx.dispensed)}</TableCell>
                   <TableCell>
-                    {rx.status === 'active' && rx.refillsRemaining > 0 && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleRefillRequest(rx.id)}
-                      >
-                        <RefreshCw className="mr-1 h-3 w-3" />
-                        Refill
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {!rx.dispensed && (
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          onClick={() => router.push(`/patient/prescriptions/${rx.id}/order`)}
+                        >
+                          <ShoppingCart className="mr-1 h-3 w-3" />
+                          Order
+                        </Button>
+                      )}
+                      {rx.status === 'active' && rx.refillsRemaining > 0 && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleRefillRequest(rx.id)}
+                        >
+                          <RefreshCw className="mr-1 h-3 w-3" />
+                          Refill
+                        </Button>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
@@ -231,11 +247,18 @@ export default function PrescriptionsPage() {
                   )}
                   <div className="mt-3 flex items-center justify-between">
                     {getStatusBadge(rx.status)}
-                    {rx.status === 'active' && rx.refillsRemaining > 0 && (
-                      <Button size="sm" variant="outline" onClick={() => handleRefillRequest(rx.id)}>
-                        <RefreshCw className="mr-1 h-3 w-3" /> Refill
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {!rx.dispensed && (
+                        <Button size="sm" variant="primary" onClick={() => router.push(`/patient/prescriptions/${rx.id}/order`)}>
+                          <ShoppingCart className="mr-1 h-3 w-3" /> Order
+                        </Button>
+                      )}
+                      {rx.status === 'active' && rx.refillsRemaining > 0 && (
+                        <Button size="sm" variant="outline" onClick={() => handleRefillRequest(rx.id)}>
+                          <RefreshCw className="mr-1 h-3 w-3" /> Refill
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
