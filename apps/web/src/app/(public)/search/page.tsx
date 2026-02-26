@@ -158,7 +158,8 @@ function SearchPageContent() {
   async function fetchDiagnosticTests() {
     try {
       const response = await diagnosticTestsAPI.search({ limit: 100 });
-      setDiagnosticTests(response.data.data || []);
+      const raw = response.data.data;
+      setDiagnosticTests(Array.isArray(raw) ? raw : raw?.data || []);
     } catch {
       setDiagnosticTests([]);
     }
@@ -174,7 +175,8 @@ function SearchPageContent() {
         isAvailable: true,
         limit: 24,
       });
-      setPractitioners(response.data.data || []);
+      const raw = response.data.data;
+      setPractitioners(Array.isArray(raw) ? raw : raw?.data || []);
     } catch {
       setPractitioners([]);
     } finally {
