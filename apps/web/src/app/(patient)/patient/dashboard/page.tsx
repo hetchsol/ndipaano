@@ -50,14 +50,16 @@ export default function PatientDashboard() {
     async function fetchData() {
       try {
         const [bookingsRes, recordsRes] = await Promise.allSettled([
-          bookingsAPI.list({ status: 'confirmed', limit: 3 }),
+          bookingsAPI.list({ status: 'CONFIRMED', limit: 3 }),
           medicalRecordsAPI.list({ limit: 3 }),
         ]);
         if (bookingsRes.status === 'fulfilled') {
-          setUpcomingBookings(bookingsRes.value.data.data?.bookings || []);
+          const bd = bookingsRes.value.data.data;
+          setUpcomingBookings(bd?.data || bd || []);
         }
         if (recordsRes.status === 'fulfilled') {
-          setRecentRecords(recordsRes.value.data.data?.records || []);
+          const rd = recordsRes.value.data.data;
+          setRecentRecords(rd?.data || rd || []);
         }
       } catch {
         // Use empty state
