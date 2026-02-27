@@ -494,6 +494,51 @@ export const medicationOrdersAPI = {
     api.patch(`/medication-orders/${id}/cancel`, { reason }),
 };
 
+// --- Medication Reminders API ---
+export const medicationRemindersAPI = {
+  create: (data: {
+    prescriptionId: string;
+    frequency: string;
+    timesOfDay: string[];
+    startDate: string;
+    endDate?: string;
+    notifyVia: string[];
+    missedWindowMinutes?: number;
+  }) => api.post('/medication-reminders', data),
+
+  list: (params?: { page?: number; limit?: number; status?: string }) =>
+    api.get('/medication-reminders', { params }),
+
+  getToday: () => api.get('/medication-reminders/today'),
+
+  getSummary: (params?: { prescriptionId?: string; startDate?: string; endDate?: string }) =>
+    api.get('/medication-reminders/summary', { params }),
+
+  getById: (id: string) => api.get(`/medication-reminders/${id}`),
+
+  update: (id: string, data: {
+    timesOfDay?: string[];
+    endDate?: string;
+    notifyVia?: string[];
+    missedWindowMinutes?: number;
+    status?: string;
+  }) => api.patch(`/medication-reminders/${id}`, data),
+
+  pause: (id: string) => api.patch(`/medication-reminders/${id}/pause`),
+
+  resume: (id: string) => api.patch(`/medication-reminders/${id}/resume`),
+
+  cancel: (id: string) => api.patch(`/medication-reminders/${id}/cancel`),
+
+  getRefillStatus: (id: string) => api.get(`/medication-reminders/${id}/refill`),
+
+  logAdherence: (data: { adherenceLogId: string; status: string; reason?: string }) =>
+    api.post('/medication-reminders/log', data),
+
+  getPatientAdherence: (patientId: string) =>
+    api.get(`/medication-reminders/patient/${patientId}/adherence`),
+};
+
 // --- Pharmacies API (public) ---
 export const pharmaciesAPI = {
   searchNearby: (params?: { city?: string; latitude?: number; longitude?: number; radiusKm?: number; page?: number; limit?: number }) =>

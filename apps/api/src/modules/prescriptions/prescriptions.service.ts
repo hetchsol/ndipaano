@@ -4,8 +4,11 @@ import {
   ForbiddenException,
   BadRequestException,
   Logger,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MedicationRemindersService } from '../medication-reminders/medication-reminders.service';
 import {
   CreatePrescriptionDto,
   PrescriptionQueryDto,
@@ -15,7 +18,11 @@ import {
 export class PrescriptionsService {
   private readonly logger = new Logger(PrescriptionsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => MedicationRemindersService))
+    private readonly medicationRemindersService: MedicationRemindersService,
+  ) {}
 
   /**
    * Create a new prescription. Validates that:
@@ -504,6 +511,13 @@ export class PrescriptionsService {
     this.logger.log(
       `Prescription ${prescriptionId} marked as dispensed by user ${pharmacyUserId}`,
     );
+
+    // Auto-create medication reminders
+    try {
+      await this.medicationRemindersService.autoCreateReminders(prescriptionId);
+    } catch (err) {
+      this.logger.warn(`Failed to auto-create medication reminders: ${err}`);
+    }
 
     return updated;
   }

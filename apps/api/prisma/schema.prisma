@@ -200,6 +200,30 @@ enum MedicationOrderStatus {
   CANCELLED
 }
 
+enum ReminderFrequency {
+  ONCE_DAILY
+  TWICE_DAILY
+  THREE_TIMES_DAILY
+  FOUR_TIMES_DAILY
+  EVERY_OTHER_DAY
+  WEEKLY
+  CUSTOM
+}
+
+enum AdherenceStatus {
+  PENDING
+  TAKEN
+  SKIPPED
+  MISSED
+}
+
+enum MedicationReminderStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
 // =============================================================================
 // Models
 // =============================================================================
@@ -265,6 +289,10 @@ model User {
   practitionerLabOrders      LabOrder[]                 @relation("PractitionerLabOrders")
   // Medication orders as patient
   patientMedicationOrders    MedicationOrder[]           @relation("PatientMedicationOrders")
+  // Medication reminders as patient
+  patientMedicationReminders MedicationReminder[]        @relation("PatientMedicationReminders")
+  // Adherence logs as patient
+  patientAdherenceLogs       AdherenceLog[]              @relation("PatientAdherenceLogs")
 
   @@index([email])
   @@index([phone])
@@ -496,7 +524,8 @@ model Prescription {
   notes                       String?
   createdAt                   DateTime      @default(now())
 
-  medicationOrders MedicationOrder[]
+  medicationOrders    MedicationOrder[]
+  medicationReminders MedicationReminder[]
 
   @@index([medicalRecordId])
   @@index([patientId])
@@ -982,4 +1011,53 @@ model MedicationOrder {
   @@index([prescriptionId])
   @@index([status])
   @@map("medication_orders")
+}
+
+// =============================================================================
+// Medication Reminders & Adherence Tracking (Phase 3.2)
+// =============================================================================
+
+model MedicationReminder {
+  id                  String                   @id @default(uuid()) @db.Uuid
+  prescriptionId      String                   @db.Uuid
+  prescription        Prescription             @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  patientId           String                   @db.Uuid
+  patient             User                     @relation("PatientMedicationReminders", fields: [patientId], references: [id])
+  frequency           ReminderFrequency
+  timesOfDay          String[]
+  startDate           DateTime                 @db.Date
+  endDate             DateTime?                @db.Date
+  status              MedicationReminderStatus @default(ACTIVE)
+  notifyVia           NotificationChannel[]
+  totalQuantity       Int?
+  missedWindowMinutes Int                      @default(120)
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+  adherenceLogs       AdherenceLog[]
+
+  @@index([patientId])
+  @@index([prescriptionId])
+  @@index([status])
+  @@map("medication_reminders")
+}
+
+model AdherenceLog {
+  id          String             @id @default(uuid()) @db.Uuid
+  reminderId  String             @db.Uuid
+  reminder    MedicationReminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+  patientId   String             @db.Uuid
+  patient     User               @relation("PatientAdherenceLogs", fields: [patientId], references: [id])
+  scheduledAt DateTime
+  status      AdherenceStatus    @default(PENDING)
+  respondedAt DateTime?
+  reason      String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@unique([reminderId, scheduledAt])
+  @@index([reminderId])
+  @@index([patientId])
+  @@index([scheduledAt])
+  @@index([status])
+  @@map("adherence_logs")
 }

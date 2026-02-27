@@ -4,6 +4,8 @@ import {
   ForbiddenException,
   BadRequestException,
   Logger,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -14,6 +16,7 @@ import {
   CancelMedicationOrderDto,
   PharmacySearchDto,
 } from './dto/medication-order.dto';
+import { MedicationRemindersService } from '../medication-reminders/medication-reminders.service';
 
 @Injectable()
 export class MedicationOrdersService {
@@ -22,6 +25,8 @@ export class MedicationOrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
+    @Inject(forwardRef(() => MedicationRemindersService))
+    private readonly medicationRemindersService: MedicationRemindersService,
   ) {}
 
   // ===========================================================================
@@ -287,6 +292,14 @@ export class MedicationOrdersService {
     });
 
     this.sendStatusNotification(order.patientId, id, 'Medication Delivered', 'Your medication has been delivered.');
+
+    // Auto-create medication reminders
+    try {
+      await this.medicationRemindersService.autoCreateReminders(order.prescriptionId);
+    } catch (err) {
+      this.logger.warn(`Failed to auto-create medication reminders: ${err}`);
+    }
+
     return updated;
   }
 

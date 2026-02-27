@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, PractitionerType, Gender, ServiceType, BookingStatus, PaymentStatus, PaymentMethod, ConsentType, DocumentType, NotificationChannel, DiagnosticTestCategory, DayOfWeek, MessageType, TelehealthSessionStatus, LabOrderStatus, LabOrderPriority, ResultInterpretation, MedicationOrderStatus } from '@prisma/client';
+import { PrismaClient, UserRole, PractitionerType, Gender, ServiceType, BookingStatus, PaymentStatus, PaymentMethod, ConsentType, DocumentType, NotificationChannel, DiagnosticTestCategory, DayOfWeek, MessageType, TelehealthSessionStatus, LabOrderStatus, LabOrderPriority, ResultInterpretation, MedicationOrderStatus, ReminderFrequency, MedicationReminderStatus, AdherenceStatus } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
@@ -7,6 +7,8 @@ async function main() {
   console.log('Seeding database...');
 
   // Clean existing data
+  await prisma.adherenceLog.deleteMany();
+  await prisma.medicationReminder.deleteMany();
   await prisma.medicationOrder.deleteMany();
   await prisma.pharmacyInventory.deleteMany();
   await prisma.labResult.deleteMany();
@@ -512,7 +514,7 @@ async function main() {
   console.log('Created medical records');
 
   // --- Prescriptions ---
-  await prisma.prescription.create({
+  const metforminPrescription = await prisma.prescription.create({
     data: {
       medicalRecordId: record2.id,
       patientId: patient2.id,
@@ -1028,6 +1030,70 @@ async function main() {
 
     console.log('Created pending lab order');
   }
+
+  // --- Medication Reminders & Adherence Logs ---
+  const metforminReminder = await prisma.medicationReminder.create({
+    data: {
+      prescriptionId: metforminPrescription.id,
+      patientId: patient2.id,
+      frequency: ReminderFrequency.TWICE_DAILY,
+      timesOfDay: ['08:00', '20:00'],
+      startDate: new Date('2024-11-19'),
+      endDate: new Date('2025-02-17'),
+      status: MedicationReminderStatus.ACTIVE,
+      notifyVia: [NotificationChannel.IN_APP],
+      totalQuantity: 180,
+      missedWindowMinutes: 120,
+    },
+  });
+
+  // Generate 14 days of adherence logs (~85% TAKEN, ~10% MISSED, ~5% SKIPPED)
+  const adherenceData: Array<{
+    reminderId: string;
+    patientId: string;
+    scheduledAt: Date;
+    status: AdherenceStatus;
+    respondedAt: Date | null;
+    reason: string | null;
+  }> = [];
+
+  for (let day = 0; day < 14; day++) {
+    for (const time of ['08:00', '20:00']) {
+      const [hours, minutes] = time.split(':').map(Number);
+      const scheduledAt = new Date('2024-11-19');
+      scheduledAt.setDate(scheduledAt.getDate() + day);
+      scheduledAt.setHours(hours, minutes, 0, 0);
+
+      const rand = Math.random();
+      let status: AdherenceStatus;
+      let respondedAt: Date | null = null;
+      let reason: string | null = null;
+
+      if (rand < 0.85) {
+        status = AdherenceStatus.TAKEN;
+        respondedAt = new Date(scheduledAt.getTime() + Math.floor(Math.random() * 30) * 60 * 1000);
+      } else if (rand < 0.95) {
+        status = AdherenceStatus.MISSED;
+      } else {
+        status = AdherenceStatus.SKIPPED;
+        respondedAt = new Date(scheduledAt.getTime() + 10 * 60 * 1000);
+        reason = 'Felt nauseous';
+      }
+
+      adherenceData.push({
+        reminderId: metforminReminder.id,
+        patientId: patient2.id,
+        scheduledAt,
+        status,
+        respondedAt,
+        reason,
+      });
+    }
+  }
+
+  await prisma.adherenceLog.createMany({ data: adherenceData });
+
+  console.log(`Created medication reminder and ${adherenceData.length} adherence logs`);
 
   console.log('\n--- Seed Complete ---');
   console.log('Login credentials for all users: Password123!');

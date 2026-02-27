@@ -26,6 +26,7 @@ import { ChatModule } from './modules/chat/chat.module';
 import { TelehealthModule } from './modules/telehealth/telehealth.module';
 import { LabResultsModule } from './modules/lab-results/lab-results.module';
 import { MedicationOrdersModule } from './modules/medication-orders/medication-orders.module';
+import { MedicationRemindersModule } from './modules/medication-reminders/medication-reminders.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -84,6 +85,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     TelehealthModule,
     LabResultsModule,
     MedicationOrdersModule,
+    MedicationRemindersModule,
   ],
   controllers: [],
   providers: [

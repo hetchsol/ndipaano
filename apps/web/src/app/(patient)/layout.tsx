@@ -16,6 +16,7 @@ import {
   MessageCircle,
   TestTube,
   Video,
+  AlarmClock,
 } from 'lucide-react';
 
 const patientNavItems: SidebarItem[] = [
@@ -27,6 +28,7 @@ const patientNavItems: SidebarItem[] = [
   { label: 'Medical Records', href: '/patient/records', icon: FileText },
   { label: 'Prescriptions', href: '/patient/prescriptions', icon: Pill },
   { label: 'Orders', href: '/patient/medication-orders', icon: Package },
+  { label: 'Reminders', href: '/patient/reminders', icon: AlarmClock },
   { label: 'Rates', href: '/patient/rates', icon: CreditCard },
   { label: 'Settings', href: '/consent', icon: Settings },
 ];
