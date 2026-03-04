@@ -224,6 +224,33 @@ enum MedicationReminderStatus {
   CANCELLED
 }
 
+enum ReferralStatus {
+  SENT
+  ACCEPTED
+  DECLINED
+  APPOINTMENT_BOOKED
+  COMPLETED
+  CANCELLED
+}
+
+enum ReferralUrgency {
+  ROUTINE
+  URGENT
+  EMERGENCY
+}
+
+enum CarePlanStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
 // =============================================================================
 // Models
 // =============================================================================
@@ -293,6 +320,15 @@ model User {
   patientMedicationReminders MedicationReminder[]        @relation("PatientMedicationReminders")
   // Adherence logs as patient
   patientAdherenceLogs       AdherenceLog[]              @relation("PatientAdherenceLogs")
+  // Referrals
+  referralsSent              Referral[]                  @relation("ReferringPractitioner")
+  referralsReceived          Referral[]                  @relation("ReferredPractitioner")
+  patientReferrals           Referral[]                  @relation("ReferralPatient")
+  // Care plans
+  patientCarePlans           CarePlan[]                  @relation("CarePlanPatient")
+  createdCarePlans           CarePlan[]                  @relation("CarePlanCreator")
+  carePlanAssignments        CarePlanPractitioner[]      @relation("CarePlanPractitioners")
+  completedMilestones        CarePlanMilestone[]          @relation("MilestoneCompletedBy")
 
   @@index([email])
   @@index([phone])
@@ -456,7 +492,9 @@ model Booking {
   conversation      Conversation?
   reminders         BookingReminder[]
   telehealthSession TelehealthSession?
-  labOrders         LabOrder[]
+  labOrders              LabOrder[]
+  referrals              Referral[]
+  referredFromReferral   Referral[] @relation("ReferredBooking")
 
   @@index([patientId])
   @@index([practitionerId])
@@ -1060,4 +1098,101 @@ model AdherenceLog {
   @@index([scheduledAt])
   @@index([status])
   @@map("adherence_logs")
+}
+
+// =============================================================================
+// Referrals & Care Coordination (Phase 4.1)
+// =============================================================================
+
+model Referral {
+  id                     String          @id @default(uuid()) @db.Uuid
+  referringPractitionerId String         @db.Uuid
+  referringPractitioner  User            @relation("ReferringPractitioner", fields: [referringPractitionerId], references: [id])
+  referredPractitionerId String?         @db.Uuid
+  referredPractitioner   User?           @relation("ReferredPractitioner", fields: [referredPractitionerId], references: [id])
+  patientId              String          @db.Uuid
+  patient                User            @relation("ReferralPatient", fields: [patientId], references: [id])
+  bookingId              String?         @db.Uuid
+  booking                Booking?        @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  referredBookingId      String?         @db.Uuid
+  referredBooking        Booking?        @relation("ReferredBooking", fields: [referredBookingId], references: [id], onDelete: SetNull)
+  status                 ReferralStatus  @default(SENT)
+  urgency                ReferralUrgency @default(ROUTINE)
+  reason                 String
+  clinicalNotes          String?
+  specialtyRequired      String?
+  declineReason          String?
+  dischargeNotes         String?
+  acceptedAt             DateTime?
+  declinedAt             DateTime?
+  completedAt            DateTime?
+  cancelledAt            DateTime?
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+
+  @@index([referringPractitionerId])
+  @@index([referredPractitionerId])
+  @@index([patientId])
+  @@index([status])
+  @@index([urgency])
+  @@map("referrals")
+}
+
+model CarePlan {
+  id          String         @id @default(uuid()) @db.Uuid
+  patientId   String         @db.Uuid
+  patient     User           @relation("CarePlanPatient", fields: [patientId], references: [id])
+  createdById String         @db.Uuid
+  createdBy   User           @relation("CarePlanCreator", fields: [createdById], references: [id])
+  title       String
+  description String?
+  status      CarePlanStatus @default(ACTIVE)
+  startDate   DateTime       @db.Date
+  endDate     DateTime?      @db.Date
+  completedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  milestones    CarePlanMilestone[]
+  practitioners CarePlanPractitioner[]
+
+  @@index([patientId])
+  @@index([createdById])
+  @@index([status])
+  @@map("care_plans")
+}
+
+model CarePlanMilestone {
+  id            String          @id @default(uuid()) @db.Uuid
+  carePlanId    String          @db.Uuid
+  carePlan      CarePlan        @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  status        MilestoneStatus @default(PENDING)
+  targetDate    DateTime?       @db.Date
+  completedAt   DateTime?
+  completedById String?         @db.Uuid
+  completedBy   User?           @relation("MilestoneCompletedBy", fields: [completedById], references: [id], onDelete: SetNull)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([carePlanId])
+  @@index([status])
+  @@index([completedById])
+  @@map("care_plan_milestones")
+}
+
+model CarePlanPractitioner {
+  id             String   @id @default(uuid()) @db.Uuid
+  carePlanId     String   @db.Uuid
+  carePlan       CarePlan @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+  practitionerId String   @db.Uuid
+  practitioner   User     @relation("CarePlanPractitioners", fields: [practitionerId], references: [id])
+  role           String?
+  addedAt        DateTime @default(now())
+
+  @@unique([carePlanId, practitionerId])
+  @@index([carePlanId])
+  @@index([practitionerId])
+  @@map("care_plan_practitioners")
 }
