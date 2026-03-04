@@ -40,7 +40,7 @@ function NewBookingPage() {
   const [selectedSlot, setSelectedSlot] = useState<{ startTime: string; endTime: string } | null>(null);
   const [address, setAddress] = useState('');
   const [notes, setNotes] = useState('');
-  const [visitType, setVisitType] = useState<'HOME_VISIT' | 'VIRTUAL_CONSULTATION'>('HOME_VISIT');
+  const [visitType, setVisitType] = useState<'GENERAL_CONSULTATION' | 'VIRTUAL_CONSULTATION'>('GENERAL_CONSULTATION');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -97,7 +97,7 @@ function NewBookingPage() {
 
   const handleSubmit = async () => {
     if (!selectedPractitioner || !selectedSlot) return;
-    if (visitType === 'HOME_VISIT' && !address) return;
+    if (visitType === 'GENERAL_CONSULTATION' && !address) return;
     setIsSubmitting(true);
     setError('');
     try {
@@ -105,7 +105,7 @@ function NewBookingPage() {
         practitionerId: selectedPractitioner.id,
         scheduledAt: selectedSlot.startTime,
         serviceType: visitType,
-        address: visitType === 'HOME_VISIT' ? address : undefined,
+        address: visitType === 'GENERAL_CONSULTATION' ? address : undefined,
         notes: notes || undefined,
       });
       router.push('/patient/bookings');
@@ -295,9 +295,9 @@ function NewBookingPage() {
               <div className="flex gap-3">
                 <button
                   type="button"
-                  onClick={() => setVisitType('HOME_VISIT')}
+                  onClick={() => setVisitType('GENERAL_CONSULTATION')}
                   className={`flex flex-1 items-center justify-center gap-2 rounded-lg border-2 px-4 py-3 text-sm font-medium transition-colors ${
-                    visitType === 'HOME_VISIT'
+                    visitType === 'GENERAL_CONSULTATION'
                       ? 'border-primary-700 bg-primary-50 text-primary-700'
                       : 'border-gray-200 text-gray-600 hover:border-gray-300'
                   }`}
@@ -319,7 +319,7 @@ function NewBookingPage() {
                 </button>
               </div>
             </div>
-            {visitType === 'HOME_VISIT' && (
+            {visitType === 'GENERAL_CONSULTATION' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Address *
@@ -348,7 +348,7 @@ function NewBookingPage() {
             )}
             <Button
               onClick={handleSubmit}
-              disabled={isSubmitting || (visitType === 'HOME_VISIT' && !address)}
+              disabled={isSubmitting || (visitType === 'GENERAL_CONSULTATION' && !address)}
               className="w-full"
             >
               {isSubmitting ? 'Booking...' : 'Confirm Booking'}

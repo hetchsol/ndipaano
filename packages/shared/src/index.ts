@@ -16,6 +16,18 @@ export {
   MessageType,
   DayOfWeek,
   ReminderType,
+  TelehealthSessionStatus,
+  LabOrderStatus,
+  LabOrderPriority,
+  ResultInterpretation,
+  MedicationOrderStatus,
+  ReminderFrequency,
+  AdherenceStatus,
+  MedicationReminderStatus,
+  ReferralStatus,
+  ReferralUrgency,
+  CarePlanStatus,
+  MilestoneStatus,
 } from './types/enums';
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────

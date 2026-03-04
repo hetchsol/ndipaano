@@ -50,16 +50,14 @@ export const ZAMBIAN_LANGUAGES = [
  * mapped to practitioner types used in the platform.
  */
 export const HPCZ_CATEGORIES: Record<PractitionerType, string> = {
-  [PractitionerType.DOCTOR]: 'Medical Practitioners',
-  [PractitionerType.NURSE]: 'Nurses and Midwives',
+  [PractitionerType.GENERAL_PRACTITIONER]: 'Medical Practitioners',
+  [PractitionerType.SPECIALIST_DOCTOR]: 'Medical Practitioners',
+  [PractitionerType.REGISTERED_NURSE]: 'Nurses and Midwives',
+  [PractitionerType.ENROLLED_NURSE]: 'Nurses and Midwives',
   [PractitionerType.CLINICAL_OFFICER]: 'Clinical Officers',
   [PractitionerType.PHYSIOTHERAPIST]: 'Physiotherapy and Rehabilitation',
   [PractitionerType.PHARMACIST]: 'Pharmacy',
-  [PractitionerType.LAB_TECHNICIAN]: 'Biomedical Sciences',
   [PractitionerType.MIDWIFE]: 'Nurses and Midwives',
-  [PractitionerType.DENTIST]: 'Dental Practitioners',
-  [PractitionerType.PSYCHOLOGIST]: 'Clinical Psychology',
-  [PractitionerType.NUTRITIONIST]: 'Nutrition and Dietetics',
 };
 
 // ─── ZAMRA Controlled Substances Schedules ───────────────────────────────────
