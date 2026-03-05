@@ -87,7 +87,11 @@ async function bootstrap() {
   // ---------------------------------------------------------------------------
   // Swagger / OpenAPI documentation
   // ---------------------------------------------------------------------------
-  if (configService.get<string>('NODE_ENV') !== 'production') {
+  const swaggerEnabled =
+    configService.get<string>('SWAGGER_ENABLED', 'false') === 'true' ||
+    configService.get<string>('NODE_ENV') !== 'production';
+
+  if (swaggerEnabled) {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('Ndipaano API')
       .setDescription(
@@ -123,6 +127,7 @@ async function bootstrap() {
       .addTag('Admin', 'Administrative operations')
       .addTag('Compliance', 'DPA compliance, consent, and audit logs')
       .addServer('http://localhost:3001', 'Local Development')
+      .addServer('https://ndipaano-api.onrender.com', 'Production')
       .build();
 
     const document = SwaggerModule.createDocument(app, swaggerConfig);

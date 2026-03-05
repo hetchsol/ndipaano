@@ -14,6 +14,7 @@ import {
   ApiOperation,
   ApiParam,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { ReferralsService } from './referrals.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles, UserRole, PRACTITIONER_ROLES } from '../../common/decorators/roles.decorator';
@@ -32,6 +33,7 @@ export class ReferralsController {
 
   @Post()
   @Roles(...PRACTITIONER_ROLES)
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @ApiOperation({ summary: 'Create a referral' })
   create(
     @CurrentUser('id') userId: string,
@@ -63,6 +65,7 @@ export class ReferralsController {
 
   @Patch(':id/accept')
   @Roles(...PRACTITIONER_ROLES)
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Accept a referral (referred practitioner only)' })
   @ApiParam({ name: 'id', description: 'Referral ID' })
   accept(
@@ -74,6 +77,7 @@ export class ReferralsController {
 
   @Patch(':id/decline')
   @Roles(...PRACTITIONER_ROLES)
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Decline a referral (referred practitioner only)' })
   @ApiParam({ name: 'id', description: 'Referral ID' })
   decline(
@@ -86,6 +90,7 @@ export class ReferralsController {
 
   @Patch(':id/complete')
   @Roles(...PRACTITIONER_ROLES)
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Complete a referral (either practitioner)' })
   @ApiParam({ name: 'id', description: 'Referral ID' })
   complete(
@@ -98,6 +103,7 @@ export class ReferralsController {
 
   @Patch(':id/cancel')
   @Roles(...PRACTITIONER_ROLES)
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Cancel a referral (referring practitioner only)' })
   @ApiParam({ name: 'id', description: 'Referral ID' })
   cancel(

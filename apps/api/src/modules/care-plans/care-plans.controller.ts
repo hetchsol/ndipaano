@@ -15,6 +15,7 @@ import {
   ApiOperation,
   ApiParam,
 } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { CarePlansService } from './care-plans.service';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Roles, UserRole, PRACTITIONER_ROLES } from '../../common/decorators/roles.decorator';
@@ -35,6 +36,7 @@ export class CarePlansController {
 
   @Post()
   @Roles(...PRACTITIONER_ROLES)
+  @Throttle({ default: { ttl: 60000, limit: 5 } })
   @ApiOperation({ summary: 'Create a care plan' })
   create(
     @CurrentUser('id') userId: string,
@@ -66,6 +68,7 @@ export class CarePlansController {
 
   @Patch(':id')
   @Roles(...PRACTITIONER_ROLES)
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Update a care plan' })
   @ApiParam({ name: 'id', description: 'Care Plan ID' })
   update(
@@ -82,6 +85,7 @@ export class CarePlansController {
 
   @Post(':id/milestones')
   @Roles(...PRACTITIONER_ROLES)
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Add a milestone to a care plan' })
   @ApiParam({ name: 'id', description: 'Care Plan ID' })
   addMilestone(
@@ -94,6 +98,7 @@ export class CarePlansController {
 
   @Patch(':id/milestones/:milestoneId')
   @Roles(...PRACTITIONER_ROLES)
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Update a milestone' })
   @ApiParam({ name: 'id', description: 'Care Plan ID' })
   @ApiParam({ name: 'milestoneId', description: 'Milestone ID' })
@@ -112,6 +117,7 @@ export class CarePlansController {
 
   @Post(':id/practitioners')
   @Roles(...PRACTITIONER_ROLES)
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Add a practitioner to a care plan (creator only)' })
   @ApiParam({ name: 'id', description: 'Care Plan ID' })
   addPractitioner(
@@ -124,6 +130,7 @@ export class CarePlansController {
 
   @Delete(':id/practitioners/:practitionerId')
   @Roles(...PRACTITIONER_ROLES)
+  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Remove a practitioner from a care plan (creator only)' })
   @ApiParam({ name: 'id', description: 'Care Plan ID' })
   @ApiParam({ name: 'practitionerId', description: 'Practitioner User ID' })

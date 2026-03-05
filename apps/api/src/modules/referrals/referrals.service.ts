@@ -42,58 +42,62 @@ export class ReferralsService {
   // ===========================================================================
 
   async create(practitionerId: string, dto: CreateReferralDto) {
-    // Validate patient exists
-    const patient = await this.prisma.user.findUnique({
-      where: { id: dto.patientId },
-      select: { id: true, role: true, firstName: true, lastName: true },
-    });
-    if (!patient || patient.role !== UserRole.PATIENT) {
-      throw new NotFoundException('Patient not found');
-    }
-
-    // Validate referred practitioner if provided
-    if (dto.referredPractitionerId) {
-      const referred = await this.prisma.user.findUnique({
-        where: { id: dto.referredPractitionerId },
-        select: { id: true, role: true },
+    const { referral, patient } = await this.prisma.$transaction(async (tx) => {
+      // Validate patient exists
+      const patient = await tx.user.findUnique({
+        where: { id: dto.patientId },
+        select: { id: true, role: true, firstName: true, lastName: true },
       });
-      if (!referred || !PRACTITIONER_PRISMA_ROLES.includes(referred.role as UserRole)) {
-        throw new NotFoundException('Referred practitioner not found');
+      if (!patient || patient.role !== UserRole.PATIENT) {
+        throw new NotFoundException('Patient not found');
       }
-    }
 
-    // Validate booking if provided
-    if (dto.bookingId) {
-      const booking = await this.prisma.booking.findUnique({
-        where: { id: dto.bookingId },
+      // Validate referred practitioner if provided
+      if (dto.referredPractitionerId) {
+        const referred = await tx.user.findUnique({
+          where: { id: dto.referredPractitionerId },
+          select: { id: true, role: true },
+        });
+        if (!referred || !PRACTITIONER_PRISMA_ROLES.includes(referred.role as UserRole)) {
+          throw new NotFoundException('Referred practitioner not found');
+        }
+      }
+
+      // Validate booking if provided
+      if (dto.bookingId) {
+        const booking = await tx.booking.findUnique({
+          where: { id: dto.bookingId },
+        });
+        if (!booking) {
+          throw new NotFoundException('Booking not found');
+        }
+      }
+
+      const referral = await tx.referral.create({
+        data: {
+          referringPractitionerId: practitionerId,
+          patientId: dto.patientId,
+          reason: dto.reason,
+          urgency: dto.urgency,
+          referredPractitionerId: dto.referredPractitionerId,
+          bookingId: dto.bookingId,
+          clinicalNotes: dto.clinicalNotes,
+          specialtyRequired: dto.specialtyRequired,
+          status: ReferralStatus.SENT,
+        },
+        include: {
+          patient: { select: { id: true, firstName: true, lastName: true } },
+          referringPractitioner: { select: { id: true, firstName: true, lastName: true } },
+          referredPractitioner: { select: { id: true, firstName: true, lastName: true } },
+        },
       });
-      if (!booking) {
-        throw new NotFoundException('Booking not found');
-      }
-    }
 
-    const referral = await this.prisma.referral.create({
-      data: {
-        referringPractitionerId: practitionerId,
-        patientId: dto.patientId,
-        reason: dto.reason,
-        urgency: dto.urgency,
-        referredPractitionerId: dto.referredPractitionerId,
-        bookingId: dto.bookingId,
-        clinicalNotes: dto.clinicalNotes,
-        specialtyRequired: dto.specialtyRequired,
-        status: ReferralStatus.SENT,
-      },
-      include: {
-        patient: { select: { id: true, firstName: true, lastName: true } },
-        referringPractitioner: { select: { id: true, firstName: true, lastName: true } },
-        referredPractitioner: { select: { id: true, firstName: true, lastName: true } },
-      },
+      return { referral, patient };
     });
 
     this.logger.log(`Referral created: ${referral.id} by practitioner ${practitionerId}`);
 
-    // Notify patient
+    // Notifications stay outside transaction (fire-and-forget)
     try {
       await this.notificationsService.sendToUser(
         dto.patientId,
@@ -107,7 +111,6 @@ export class ReferralsService {
       this.logger.warn(`Failed to send referral notification to patient: ${err}`);
     }
 
-    // Notify referred practitioner
     if (dto.referredPractitionerId) {
       try {
         await this.notificationsService.sendToUser(
@@ -209,21 +212,36 @@ export class ReferralsService {
   // ===========================================================================
 
   async accept(userId: string, id: string) {
-    const referral = await this.prisma.referral.findUnique({ where: { id } });
-    if (!referral) throw new NotFoundException('Referral not found');
+    const { updated, referral } = await this.prisma.$transaction(async (tx) => {
+      const referral = await tx.referral.findUnique({ where: { id } });
+      if (!referral) throw new NotFoundException('Referral not found');
 
-    if (referral.referredPractitionerId !== userId) {
-      throw new ForbiddenException('Only the referred practitioner can accept this referral');
-    }
-    if (referral.status !== ReferralStatus.SENT) {
-      throw new BadRequestException(`Cannot accept referral with status ${referral.status}`);
-    }
+      if (referral.referredPractitionerId !== userId) {
+        throw new ForbiddenException('Only the referred practitioner can accept this referral');
+      }
+      if (referral.status !== ReferralStatus.SENT) {
+        throw new BadRequestException(`Cannot accept referral with status ${referral.status}`);
+      }
 
-    const updated = await this.prisma.referral.update({
-      where: { id },
-      data: { status: ReferralStatus.ACCEPTED, acceptedAt: new Date() },
+      const updated = await tx.referral.update({
+        where: { id },
+        data: { status: ReferralStatus.ACCEPTED, acceptedAt: new Date() },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          userId,
+          action: 'REFERRAL_ACCEPTED',
+          resourceType: 'Referral',
+          resourceId: id,
+          details: { previousStatus: referral.status, newStatus: 'ACCEPTED' },
+        },
+      });
+
+      return { updated, referral };
     });
 
+    // Notifications stay outside transaction
     try {
       await this.notificationsService.sendToUser(
         referral.patientId,
@@ -249,25 +267,40 @@ export class ReferralsService {
   }
 
   async decline(userId: string, id: string, dto: DeclineReferralDto) {
-    const referral = await this.prisma.referral.findUnique({ where: { id } });
-    if (!referral) throw new NotFoundException('Referral not found');
+    const { updated, referral } = await this.prisma.$transaction(async (tx) => {
+      const referral = await tx.referral.findUnique({ where: { id } });
+      if (!referral) throw new NotFoundException('Referral not found');
 
-    if (referral.referredPractitionerId !== userId) {
-      throw new ForbiddenException('Only the referred practitioner can decline this referral');
-    }
-    if (referral.status !== ReferralStatus.SENT) {
-      throw new BadRequestException(`Cannot decline referral with status ${referral.status}`);
-    }
+      if (referral.referredPractitionerId !== userId) {
+        throw new ForbiddenException('Only the referred practitioner can decline this referral');
+      }
+      if (referral.status !== ReferralStatus.SENT) {
+        throw new BadRequestException(`Cannot decline referral with status ${referral.status}`);
+      }
 
-    const updated = await this.prisma.referral.update({
-      where: { id },
-      data: {
-        status: ReferralStatus.DECLINED,
-        declinedAt: new Date(),
-        declineReason: dto.reason,
-      },
+      const updated = await tx.referral.update({
+        where: { id },
+        data: {
+          status: ReferralStatus.DECLINED,
+          declinedAt: new Date(),
+          declineReason: dto.reason,
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          userId,
+          action: 'REFERRAL_DECLINED',
+          resourceType: 'Referral',
+          resourceId: id,
+          details: { previousStatus: referral.status, newStatus: 'DECLINED', reason: dto.reason },
+        },
+      });
+
+      return { updated, referral };
     });
 
+    // Notifications stay outside transaction
     try {
       await this.notificationsService.sendToUser(
         referral.referringPractitionerId,
@@ -285,34 +318,49 @@ export class ReferralsService {
   }
 
   async complete(userId: string, id: string, dto: CompleteReferralDto) {
-    const referral = await this.prisma.referral.findUnique({ where: { id } });
-    if (!referral) throw new NotFoundException('Referral not found');
+    const { updated, referral } = await this.prisma.$transaction(async (tx) => {
+      const referral = await tx.referral.findUnique({ where: { id } });
+      if (!referral) throw new NotFoundException('Referral not found');
 
-    // Either practitioner can complete
-    if (
-      referral.referringPractitionerId !== userId &&
-      referral.referredPractitionerId !== userId
-    ) {
-      throw new ForbiddenException('Only involved practitioners can complete this referral');
-    }
+      // Either practitioner can complete
+      if (
+        referral.referringPractitionerId !== userId &&
+        referral.referredPractitionerId !== userId
+      ) {
+        throw new ForbiddenException('Only involved practitioners can complete this referral');
+      }
 
-    const allowedStatuses: ReferralStatus[] = [
-      ReferralStatus.ACCEPTED,
-      ReferralStatus.APPOINTMENT_BOOKED,
-    ];
-    if (!allowedStatuses.includes(referral.status)) {
-      throw new BadRequestException(`Cannot complete referral with status ${referral.status}`);
-    }
+      const allowedStatuses: ReferralStatus[] = [
+        ReferralStatus.ACCEPTED,
+        ReferralStatus.APPOINTMENT_BOOKED,
+      ];
+      if (!allowedStatuses.includes(referral.status)) {
+        throw new BadRequestException(`Cannot complete referral with status ${referral.status}`);
+      }
 
-    const updated = await this.prisma.referral.update({
-      where: { id },
-      data: {
-        status: ReferralStatus.COMPLETED,
-        completedAt: new Date(),
-        dischargeNotes: dto.dischargeNotes,
-      },
+      const updated = await tx.referral.update({
+        where: { id },
+        data: {
+          status: ReferralStatus.COMPLETED,
+          completedAt: new Date(),
+          dischargeNotes: dto.dischargeNotes,
+        },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          userId,
+          action: 'REFERRAL_COMPLETED',
+          resourceType: 'Referral',
+          resourceId: id,
+          details: { previousStatus: referral.status, newStatus: 'COMPLETED' },
+        },
+      });
+
+      return { updated, referral };
     });
 
+    // Notifications stay outside transaction
     try {
       await this.notificationsService.sendToUser(
         referral.patientId,
@@ -330,28 +378,42 @@ export class ReferralsService {
   }
 
   async cancel(userId: string, id: string) {
-    const referral = await this.prisma.referral.findUnique({ where: { id } });
-    if (!referral) throw new NotFoundException('Referral not found');
+    const { updated, referral } = await this.prisma.$transaction(async (tx) => {
+      const referral = await tx.referral.findUnique({ where: { id } });
+      if (!referral) throw new NotFoundException('Referral not found');
 
-    if (referral.referringPractitionerId !== userId) {
-      throw new ForbiddenException('Only the referring practitioner can cancel this referral');
-    }
+      if (referral.referringPractitionerId !== userId) {
+        throw new ForbiddenException('Only the referring practitioner can cancel this referral');
+      }
 
-    const terminalStatuses: ReferralStatus[] = [
-      ReferralStatus.COMPLETED,
-      ReferralStatus.DECLINED,
-      ReferralStatus.CANCELLED,
-    ];
-    if (terminalStatuses.includes(referral.status)) {
-      throw new BadRequestException(`Cannot cancel referral with status ${referral.status}`);
-    }
+      const terminalStatuses: ReferralStatus[] = [
+        ReferralStatus.COMPLETED,
+        ReferralStatus.DECLINED,
+        ReferralStatus.CANCELLED,
+      ];
+      if (terminalStatuses.includes(referral.status)) {
+        throw new BadRequestException(`Cannot cancel referral with status ${referral.status}`);
+      }
 
-    const updated = await this.prisma.referral.update({
-      where: { id },
-      data: { status: ReferralStatus.CANCELLED, cancelledAt: new Date() },
+      const updated = await tx.referral.update({
+        where: { id },
+        data: { status: ReferralStatus.CANCELLED, cancelledAt: new Date() },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          userId,
+          action: 'REFERRAL_CANCELLED',
+          resourceType: 'Referral',
+          resourceId: id,
+          details: { previousStatus: referral.status, newStatus: 'CANCELLED' },
+        },
+      });
+
+      return { updated, referral };
     });
 
-    // Notify patient and referred practitioner
+    // Notifications stay outside transaction
     try {
       await this.notificationsService.sendToUser(
         referral.patientId,

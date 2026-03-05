@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { BullModule } from '@nestjs/bullmq';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { PrismaModule } from './prisma/prisma.module';
 import configuration from './config/configuration';
 
@@ -44,6 +45,10 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     }),
 
     PrismaModule,
+
+    ThrottlerModule.forRoot({
+      throttlers: [{ ttl: 60000, limit: 30 }],
+    }),
 
     ScheduleModule.forRoot(),
 
@@ -94,6 +99,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
   controllers: [],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
     { provide: APP_INTERCEPTOR, useClass: TransformInterceptor },
     { provide: APP_INTERCEPTOR, useClass: AuditLogInterceptor },
   ],

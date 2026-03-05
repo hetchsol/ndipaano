@@ -197,43 +197,59 @@ export class CarePlansService {
   // ===========================================================================
 
   async update(userId: string, id: string, dto: UpdateCarePlanDto) {
-    const carePlan = await this.prisma.carePlan.findUnique({
-      where: { id },
-      include: { practitioners: true },
-    });
-    if (!carePlan) throw new NotFoundException('Care plan not found');
+    return this.prisma.$transaction(async (tx) => {
+      const carePlan = await tx.carePlan.findUnique({
+        where: { id },
+        include: { practitioners: true },
+      });
+      if (!carePlan) throw new NotFoundException('Care plan not found');
 
-    const isAssigned = carePlan.practitioners.some(
-      (p) => p.practitionerId === userId,
-    );
-    if (!isAssigned) {
-      throw new ForbiddenException('Only the creator or assigned practitioners can update this care plan');
-    }
-
-    const data: Prisma.CarePlanUpdateInput = {};
-    if (dto.title) data.title = dto.title;
-    if (dto.description !== undefined) data.description = dto.description;
-    if (dto.startDate) data.startDate = new Date(dto.startDate);
-    if (dto.endDate !== undefined) data.endDate = dto.endDate ? new Date(dto.endDate) : null;
-    if (dto.status) {
-      data.status = dto.status;
-      if (dto.status === CarePlanStatus.COMPLETED) {
-        data.completedAt = new Date();
+      const isAssigned = carePlan.practitioners.some(
+        (p) => p.practitionerId === userId,
+      );
+      if (!isAssigned) {
+        throw new ForbiddenException('Only the creator or assigned practitioners can update this care plan');
       }
-    }
 
-    return this.prisma.carePlan.update({
-      where: { id },
-      data,
-      include: {
-        patient: { select: { id: true, firstName: true, lastName: true } },
-        milestones: { orderBy: { targetDate: 'asc' } },
-        practitioners: {
-          include: {
-            practitioner: { select: { id: true, firstName: true, lastName: true } },
+      const data: Prisma.CarePlanUpdateInput = {};
+      if (dto.title) data.title = dto.title;
+      if (dto.description !== undefined) data.description = dto.description;
+      if (dto.startDate) data.startDate = new Date(dto.startDate);
+      if (dto.endDate !== undefined) data.endDate = dto.endDate ? new Date(dto.endDate) : null;
+      if (dto.status) {
+        data.status = dto.status;
+        if (dto.status === CarePlanStatus.COMPLETED) {
+          data.completedAt = new Date();
+        }
+      }
+
+      const updated = await tx.carePlan.update({
+        where: { id },
+        data,
+        include: {
+          patient: { select: { id: true, firstName: true, lastName: true } },
+          milestones: { orderBy: { targetDate: 'asc' } },
+          practitioners: {
+            include: {
+              practitioner: { select: { id: true, firstName: true, lastName: true } },
+            },
           },
         },
-      },
+      });
+
+      if (dto.status && dto.status !== carePlan.status) {
+        await tx.auditLog.create({
+          data: {
+            userId,
+            action: 'CARE_PLAN_STATUS_CHANGED',
+            resourceType: 'CarePlan',
+            resourceId: id,
+            details: { previousStatus: carePlan.status, newStatus: dto.status },
+          },
+        });
+      }
+
+      return updated;
     });
   }
 
@@ -275,47 +291,63 @@ export class CarePlansService {
     milestoneId: string,
     dto: UpdateMilestoneDto,
   ) {
-    const carePlan = await this.prisma.carePlan.findUnique({
-      where: { id: carePlanId },
-      include: { practitioners: true },
-    });
-    if (!carePlan) throw new NotFoundException('Care plan not found');
+    const { updated, carePlan, milestone } = await this.prisma.$transaction(async (tx) => {
+      const carePlan = await tx.carePlan.findUnique({
+        where: { id: carePlanId },
+        include: { practitioners: true },
+      });
+      if (!carePlan) throw new NotFoundException('Care plan not found');
 
-    const isAssigned = carePlan.practitioners.some(
-      (p) => p.practitionerId === userId,
-    );
-    if (!isAssigned) {
-      throw new ForbiddenException('Only the creator or assigned practitioners can update milestones');
-    }
-
-    const milestone = await this.prisma.carePlanMilestone.findUnique({
-      where: { id: milestoneId },
-    });
-    if (!milestone || milestone.carePlanId !== carePlanId) {
-      throw new NotFoundException('Milestone not found in this care plan');
-    }
-
-    const data: Prisma.CarePlanMilestoneUpdateInput = {};
-    if (dto.title) data.title = dto.title;
-    if (dto.description !== undefined) data.description = dto.description;
-    if (dto.targetDate !== undefined) data.targetDate = dto.targetDate ? new Date(dto.targetDate) : null;
-    if (dto.status) {
-      data.status = dto.status;
-      if (dto.status === MilestoneStatus.COMPLETED) {
-        data.completedAt = new Date();
-        data.completedBy = { connect: { id: userId } };
+      const isAssigned = carePlan.practitioners.some(
+        (p) => p.practitionerId === userId,
+      );
+      if (!isAssigned) {
+        throw new ForbiddenException('Only the creator or assigned practitioners can update milestones');
       }
-    }
 
-    const updated = await this.prisma.carePlanMilestone.update({
-      where: { id: milestoneId },
-      data,
-      include: {
-        completedBy: { select: { id: true, firstName: true, lastName: true } },
-      },
+      const milestone = await tx.carePlanMilestone.findUnique({
+        where: { id: milestoneId },
+      });
+      if (!milestone || milestone.carePlanId !== carePlanId) {
+        throw new NotFoundException('Milestone not found in this care plan');
+      }
+
+      const data: Prisma.CarePlanMilestoneUpdateInput = {};
+      if (dto.title) data.title = dto.title;
+      if (dto.description !== undefined) data.description = dto.description;
+      if (dto.targetDate !== undefined) data.targetDate = dto.targetDate ? new Date(dto.targetDate) : null;
+      if (dto.status) {
+        data.status = dto.status;
+        if (dto.status === MilestoneStatus.COMPLETED) {
+          data.completedAt = new Date();
+          data.completedBy = { connect: { id: userId } };
+        }
+      }
+
+      const updated = await tx.carePlanMilestone.update({
+        where: { id: milestoneId },
+        data,
+        include: {
+          completedBy: { select: { id: true, firstName: true, lastName: true } },
+        },
+      });
+
+      if (dto.status === MilestoneStatus.COMPLETED) {
+        await tx.auditLog.create({
+          data: {
+            userId,
+            action: 'MILESTONE_COMPLETED',
+            resourceType: 'CarePlanMilestone',
+            resourceId: milestoneId,
+            details: { carePlanId, milestoneTitle: milestone.title },
+          },
+        });
+      }
+
+      return { updated, carePlan, milestone };
     });
 
-    // Notify patient on milestone completion
+    // Notifications stay outside transaction
     if (dto.status === MilestoneStatus.COMPLETED) {
       try {
         await this.notificationsService.sendToUser(
@@ -339,83 +371,117 @@ export class CarePlansService {
   // ===========================================================================
 
   async addPractitioner(userId: string, carePlanId: string, dto: AddPractitionerDto) {
-    const carePlan = await this.prisma.carePlan.findUnique({
-      where: { id: carePlanId },
-    });
-    if (!carePlan) throw new NotFoundException('Care plan not found');
-
-    if (carePlan.createdById !== userId) {
-      throw new ForbiddenException('Only the care plan creator can add practitioners');
-    }
-
-    // Validate practitioner exists
-    const practitioner = await this.prisma.user.findUnique({
-      where: { id: dto.practitionerId },
-      select: { id: true, role: true, firstName: true, lastName: true },
-    });
-    if (!practitioner || !PRACTITIONER_PRISMA_ROLES.includes(practitioner.role as UserRole)) {
-      throw new NotFoundException('Practitioner not found');
-    }
-
+    let added;
+    let carePlan;
     try {
-      const added = await this.prisma.carePlanPractitioner.create({
-        data: {
-          carePlanId,
-          practitionerId: dto.practitionerId,
-          role: dto.role,
-        },
-        include: {
-          practitioner: { select: { id: true, firstName: true, lastName: true } },
-        },
+      const result = await this.prisma.$transaction(async (tx) => {
+        const carePlan = await tx.carePlan.findUnique({
+          where: { id: carePlanId },
+        });
+        if (!carePlan) throw new NotFoundException('Care plan not found');
+
+        if (carePlan.createdById !== userId) {
+          throw new ForbiddenException('Only the care plan creator can add practitioners');
+        }
+
+        // Validate practitioner exists
+        const practitioner = await tx.user.findUnique({
+          where: { id: dto.practitionerId },
+          select: { id: true, role: true, firstName: true, lastName: true },
+        });
+        if (!practitioner || !PRACTITIONER_PRISMA_ROLES.includes(practitioner.role as UserRole)) {
+          throw new NotFoundException('Practitioner not found');
+        }
+
+        const added = await tx.carePlanPractitioner.create({
+          data: {
+            carePlanId,
+            practitionerId: dto.practitionerId,
+            role: dto.role,
+          },
+          include: {
+            practitioner: { select: { id: true, firstName: true, lastName: true } },
+          },
+        });
+
+        await tx.auditLog.create({
+          data: {
+            userId,
+            action: 'CARE_PLAN_PRACTITIONER_ADDED',
+            resourceType: 'CarePlan',
+            resourceId: carePlanId,
+            details: { practitionerId: dto.practitionerId, role: dto.role },
+          },
+        });
+
+        return { added, carePlan };
       });
-
-      try {
-        await this.notificationsService.sendToUser(
-          dto.practitionerId,
-          'CARE_PLAN_ASSIGNED',
-          'Care Plan Assignment',
-          `You have been added to a care plan: "${carePlan.title}"`,
-          NotificationChannel.IN_APP,
-          { carePlanId },
-        );
-      } catch (err) {
-        this.logger.warn(`Failed to send practitioner assignment notification: ${err}`);
-      }
-
-      return added;
+      added = result.added;
+      carePlan = result.carePlan;
     } catch (err) {
       if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
         throw new BadRequestException('Practitioner is already assigned to this care plan');
       }
       throw err;
     }
+
+    // Notifications stay outside transaction
+    try {
+      await this.notificationsService.sendToUser(
+        dto.practitionerId,
+        'CARE_PLAN_ASSIGNED',
+        'Care Plan Assignment',
+        `You have been added to a care plan: "${carePlan.title}"`,
+        NotificationChannel.IN_APP,
+        { carePlanId },
+      );
+    } catch (err) {
+      this.logger.warn(`Failed to send practitioner assignment notification: ${err}`);
+    }
+
+    return added;
   }
 
   async removePractitioner(userId: string, carePlanId: string, practitionerId: string) {
-    const carePlan = await this.prisma.carePlan.findUnique({
-      where: { id: carePlanId },
+    const carePlan = await this.prisma.$transaction(async (tx) => {
+      const carePlan = await tx.carePlan.findUnique({
+        where: { id: carePlanId },
+      });
+      if (!carePlan) throw new NotFoundException('Care plan not found');
+
+      if (carePlan.createdById !== userId) {
+        throw new ForbiddenException('Only the care plan creator can remove practitioners');
+      }
+
+      if (practitionerId === carePlan.createdById) {
+        throw new BadRequestException('Cannot remove the care plan creator');
+      }
+
+      const assignment = await tx.carePlanPractitioner.findFirst({
+        where: { carePlanId, practitionerId },
+      });
+      if (!assignment) {
+        throw new NotFoundException('Practitioner is not assigned to this care plan');
+      }
+
+      await tx.carePlanPractitioner.delete({
+        where: { id: assignment.id },
+      });
+
+      await tx.auditLog.create({
+        data: {
+          userId,
+          action: 'CARE_PLAN_PRACTITIONER_REMOVED',
+          resourceType: 'CarePlan',
+          resourceId: carePlanId,
+          details: { practitionerId },
+        },
+      });
+
+      return carePlan;
     });
-    if (!carePlan) throw new NotFoundException('Care plan not found');
 
-    if (carePlan.createdById !== userId) {
-      throw new ForbiddenException('Only the care plan creator can remove practitioners');
-    }
-
-    if (practitionerId === carePlan.createdById) {
-      throw new BadRequestException('Cannot remove the care plan creator');
-    }
-
-    const assignment = await this.prisma.carePlanPractitioner.findFirst({
-      where: { carePlanId, practitionerId },
-    });
-    if (!assignment) {
-      throw new NotFoundException('Practitioner is not assigned to this care plan');
-    }
-
-    await this.prisma.carePlanPractitioner.delete({
-      where: { id: assignment.id },
-    });
-
+    // Notifications stay outside transaction
     try {
       await this.notificationsService.sendToUser(
         practitionerId,
