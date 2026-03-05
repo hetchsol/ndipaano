@@ -27,6 +27,8 @@ import { TelehealthModule } from './modules/telehealth/telehealth.module';
 import { LabResultsModule } from './modules/lab-results/lab-results.module';
 import { MedicationOrdersModule } from './modules/medication-orders/medication-orders.module';
 import { MedicationRemindersModule } from './modules/medication-reminders/medication-reminders.module';
+import { ReferralsModule } from './modules/referrals/referrals.module';
+import { CarePlansModule } from './modules/care-plans/care-plans.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -86,6 +88,8 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     LabResultsModule,
     MedicationOrdersModule,
     MedicationRemindersModule,
+    ReferralsModule,
+    CarePlansModule,
   ],
   controllers: [],
   providers: [
