@@ -26,6 +26,10 @@ export const metadata: Metadata = {
     'telemedicine',
   ],
   authors: [{ name: 'Ndipaano! Health' }],
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/apple-touch-icon.svg',
+  },
   openGraph: {
     title: 'Ndipaano! - Medical Home Care',
     description:

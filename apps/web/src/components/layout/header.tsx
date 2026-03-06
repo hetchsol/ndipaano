@@ -14,7 +14,6 @@ import {
   LogOut,
   User,
   Settings,
-  Heart,
   CreditCard,
   MessageCircle,
 } from 'lucide-react';
@@ -60,9 +59,7 @@ export function Header() {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
-            <div className="heart-pulse flex h-9 w-9 items-center justify-center rounded-lg bg-primary-700">
-              <Heart className="h-5 w-5 text-white" />
-            </div>
+            <img src="/favicon.svg" alt="Ndipaano!" className="h-9 w-9" />
             <span className="text-xl font-bold text-primary-700 ndipaano-brand">Ndipaano!</span>
           </Link>
 
