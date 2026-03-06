@@ -1,10 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
-  <rect width="180" height="180" rx="40" fill="#166534"/>
-  <path d="M90 145 C90 145 30 110 30 68 C30 48 44 36 58 36 C68 36 78 42 90 52 C102 42 112 36 122 36 C136 36 150 48 150 68 C150 110 90 145 90 145Z"
-        fill="#DC2626"/>
-  <path d="M62 50 C52 50 44 58 44 68 C44 74 48 80 48 80"
+  <rect width="180" height="180" rx="40" fill="#1C1917"/>
+  <!-- Heart shape -->
+  <path d="M90 148 C90 148 18 96 18 52 C18 24 38 6 62 6 C76 6 86 14 90 18 C94 14 104 6 118 6 C142 6 162 24 162 52 C162 96 90 148 90 148Z"
+        fill="#DC2626"
+        stroke="#B91C1C"
+        stroke-width="2"/>
+  <!-- ECG line (static for touch icon) -->
+  <polyline points="28,68 50,68 60,68 68,46 78,90 88,34 96,80 104,56 112,68 122,68 134,68 152,68"
+           fill="none"
+           stroke="white"
+           stroke-width="5.5"
+           stroke-linecap="round"
+           stroke-linejoin="round"/>
+  <!-- Pin point -->
+  <circle cx="90" cy="136" r="6" fill="white" opacity="0.9"/>
+  <circle cx="90" cy="136" r="2.5" fill="#DC2626"/>
+  <!-- Highlight -->
+  <path d="M50 28 C38 38 30 48 28 60"
         fill="none"
-        stroke="rgba(255,255,255,0.35)"
+        stroke="rgba(255,255,255,0.25)"
         stroke-width="5"
         stroke-linecap="round"/>
 </svg>
