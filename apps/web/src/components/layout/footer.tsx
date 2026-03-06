@@ -1,6 +1,5 @@
 import React from 'react';
 import Link from 'next/link';
-import { Heart } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -10,9 +9,7 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2">
-              <div className="heart-pulse flex h-8 w-8 items-center justify-center rounded-lg bg-primary-700">
-                <Heart className="h-4 w-4 text-white" />
-              </div>
+              <img src="/favicon.svg" alt="Ndipaano!" className="h-8 w-8" />
               <span className="text-lg font-bold text-primary-700 ndipaano-brand">Ndipaano!</span>
             </div>
             <p className="mt-3 text-sm text-gray-500">
