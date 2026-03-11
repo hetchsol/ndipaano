@@ -251,6 +251,27 @@ enum MilestoneStatus {
   COMPLETED
 }
 
+enum ConditionUrgency {
+  LOW
+  MODERATE
+  HIGH
+  EMERGENCY
+}
+
+enum ConditionSummaryStatus {
+  ACTIVE
+  ADOPTED
+  WITHDRAWN
+}
+
+enum AdoptionStatus {
+  PENDING_PRACTITIONER_CONSENT
+  PENDING_PATIENT_CONSENT
+  ACTIVE
+  RELEASED
+  DECLINED
+}
+
 // =============================================================================
 // Models
 // =============================================================================
@@ -329,6 +350,10 @@ model User {
   createdCarePlans           CarePlan[]                  @relation("CarePlanCreator")
   carePlanAssignments        CarePlanPractitioner[]      @relation("CarePlanPractitioners")
   completedMilestones        CarePlanMilestone[]          @relation("MilestoneCompletedBy")
+  // Condition summaries & adoptions
+  conditionSummaries         ConditionSummary[]
+  patientAdoptions           PatientAdoption[]            @relation("PatientAdoptions")
+  practitionerAdoptions      PatientAdoption[]            @relation("PractitionerAdoptions")
 
   @@index([email])
   @@index([phone])
@@ -1195,4 +1220,61 @@ model CarePlanPractitioner {
   @@index([carePlanId])
   @@index([practitionerId])
   @@map("care_plan_practitioners")
+}
+
+// =============================================================================
+// Condition Summaries & Patient Adoption (Phase 5)
+// =============================================================================
+
+model ConditionSummary {
+  id              String                 @id @default(uuid()) @db.Uuid
+  patientId       String                 @db.Uuid
+  patient         User                   @relation(fields: [patientId], references: [id])
+  symptoms        String
+  serviceType     ServiceType
+  urgency         ConditionUrgency       @default(MODERATE)
+  status          ConditionSummaryStatus @default(ACTIVE)
+  latitude        Float?
+  longitude       Float?
+  address         String?
+  city            String?
+  province        String?
+  additionalNotes String?
+  withdrawnAt     DateTime?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+
+  adoptions PatientAdoption[]
+
+  @@index([patientId])
+  @@index([status])
+  @@index([serviceType])
+  @@index([urgency])
+  @@map("condition_summaries")
+}
+
+model PatientAdoption {
+  id                  String         @id @default(uuid()) @db.Uuid
+  conditionSummaryId  String         @db.Uuid
+  conditionSummary    ConditionSummary @relation(fields: [conditionSummaryId], references: [id], onDelete: Cascade)
+  patientId           String         @db.Uuid
+  patient             User           @relation("PatientAdoptions", fields: [patientId], references: [id])
+  practitionerId      String         @db.Uuid
+  practitioner        User           @relation("PractitionerAdoptions", fields: [practitionerId], references: [id])
+  status              AdoptionStatus @default(PENDING_PRACTITIONER_CONSENT)
+  initiatedBy         String         // 'PATIENT' | 'PRACTITIONER'
+  declineReason       String?
+  releaseReason       String?
+  releasedBy          String?
+  consentedAt         DateTime?
+  releasedAt          DateTime?
+  declinedAt          DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  @@unique([conditionSummaryId, practitionerId])
+  @@index([patientId])
+  @@index([practitionerId])
+  @@index([status])
+  @@map("patient_adoptions")
 }

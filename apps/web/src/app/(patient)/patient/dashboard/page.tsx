@@ -20,6 +20,7 @@ import {
   Bell,
   ArrowRight,
   Stethoscope,
+  HeartPulse,
 } from 'lucide-react';
 
 interface Booking {
@@ -91,6 +92,13 @@ export default function PatientDashboard() {
       description: 'View active prescriptions',
       href: '/patient/prescriptions',
       color: 'bg-secondary-50 text-secondary-700',
+    },
+    {
+      icon: HeartPulse,
+      label: 'Describe Condition',
+      description: 'Get matched to a practitioner',
+      href: '/patient/conditions/new',
+      color: 'bg-rose-50 text-rose-700',
     },
     {
       icon: CalendarDays,

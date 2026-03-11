@@ -30,6 +30,7 @@ import { MedicationOrdersModule } from './modules/medication-orders/medication-o
 import { MedicationRemindersModule } from './modules/medication-reminders/medication-reminders.module';
 import { ReferralsModule } from './modules/referrals/referrals.module';
 import { CarePlansModule } from './modules/care-plans/care-plans.module';
+import { AdoptionsModule } from './modules/adoptions/adoptions.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -95,6 +96,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
     MedicationRemindersModule,
     ReferralsModule,
     CarePlansModule,
+    AdoptionsModule,
   ],
   controllers: [],
   providers: [

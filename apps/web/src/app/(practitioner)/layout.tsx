@@ -16,6 +16,8 @@ import {
   TestTube,
   Video,
   Activity,
+  Users,
+  HeartHandshake,
 } from 'lucide-react';
 
 const practitionerNavItems: SidebarItem[] = [
@@ -25,6 +27,8 @@ const practitionerNavItems: SidebarItem[] = [
   { label: 'Availability', href: '/practitioner/availability', icon: Clock },
   { label: 'Messages', href: '/practitioner/messages', icon: MessageCircle },
   { label: 'Lab Orders', href: '/practitioner/lab-orders', icon: TestTube },
+  { label: 'Matched Patients', href: '/practitioner/matched-patients', icon: Users },
+  { label: 'Adoptions', href: '/practitioner/adoptions', icon: HeartHandshake },
   { label: 'Adherence', href: '/practitioner/adherence', icon: Activity },
   { label: 'Earnings', href: '/practitioner/earnings', icon: DollarSign },
   { label: 'Profile', href: '/practitioner/profile', icon: UserCircle },

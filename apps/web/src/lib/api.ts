@@ -548,4 +548,68 @@ export const pharmaciesAPI = {
     api.get(`/pharmacies/${pharmacyId}/inventory`),
 };
 
+// --- Adoptions API ---
+export const adoptionsAPI = {
+  // Condition summaries
+  createConditionSummary: (data: {
+    symptoms: string;
+    serviceType: string;
+    urgency?: string;
+    latitude?: number;
+    longitude?: number;
+    address?: string;
+    city?: string;
+    province?: string;
+    additionalNotes?: string;
+  }) => api.post('/adoptions/condition-summaries', data),
+
+  getMyConditionSummaries: (params?: { page?: number; limit?: number; status?: string }) =>
+    api.get('/adoptions/condition-summaries/mine', { params }),
+
+  getConditionSummary: (id: string) =>
+    api.get(`/adoptions/condition-summaries/${id}`),
+
+  updateConditionSummary: (id: string, data: {
+    symptoms?: string;
+    urgency?: string;
+    latitude?: number;
+    longitude?: number;
+    address?: string;
+    city?: string;
+    province?: string;
+    additionalNotes?: string;
+  }) => api.patch(`/adoptions/condition-summaries/${id}`, data),
+
+  withdrawConditionSummary: (id: string) =>
+    api.patch(`/adoptions/condition-summaries/${id}/withdraw`),
+
+  // Matching
+  getMatchedPatients: (params?: { page?: number; limit?: number }) =>
+    api.get('/adoptions/matched-patients', { params }),
+
+  // Adoption requests
+  requestByPractitioner: (data: { conditionSummaryId: string }) =>
+    api.post('/adoptions/request-by-practitioner', data),
+
+  requestByPatient: (data: { conditionSummaryId: string; practitionerId: string }) =>
+    api.post('/adoptions/request-by-patient', data),
+
+  // Consent / Decline / Release
+  consent: (id: string) =>
+    api.patch(`/adoptions/${id}/consent`),
+
+  decline: (id: string, data?: { reason?: string }) =>
+    api.patch(`/adoptions/${id}/decline`, data || {}),
+
+  release: (id: string, data?: { reason?: string }) =>
+    api.patch(`/adoptions/${id}/release`, data || {}),
+
+  // List / Detail
+  getMyAdoptions: (params?: { page?: number; limit?: number; status?: string }) =>
+    api.get('/adoptions/mine', { params }),
+
+  getAdoption: (id: string) =>
+    api.get(`/adoptions/${id}`),
+};
+
 export default api;

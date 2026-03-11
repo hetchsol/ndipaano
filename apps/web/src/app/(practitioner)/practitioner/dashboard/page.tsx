@@ -14,7 +14,7 @@ import {
   TableHead,
   TableCell,
 } from '../../../../components/ui/table';
-import { bookingsAPI, paymentsAPI, telehealthAPI } from '../../../../lib/api';
+import { bookingsAPI, paymentsAPI, telehealthAPI, adoptionsAPI } from '../../../../lib/api';
 import { formatDate, formatCurrency, getStatusColor } from '../../../../lib/utils';
 import { toast } from 'sonner';
 import {
@@ -29,6 +29,7 @@ import {
   MapPin,
   Video,
   Stethoscope,
+  HeartHandshake,
 } from 'lucide-react';
 
 interface Booking {
@@ -48,6 +49,7 @@ interface DashboardStats {
   pendingRequests: number;
   monthRevenue: number;
   rating: number;
+  matchedPatients: number;
 }
 
 export default function PractitionerDashboard() {
@@ -58,6 +60,7 @@ export default function PractitionerDashboard() {
     pendingRequests: 0,
     monthRevenue: 0,
     rating: 0,
+    matchedPatients: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
 
@@ -67,9 +70,10 @@ export default function PractitionerDashboard() {
 
   async function fetchData() {
     try {
-      const [bookingsRes, earningsRes] = await Promise.allSettled([
+      const [bookingsRes, earningsRes, matchedRes] = await Promise.allSettled([
         bookingsAPI.list({ role: 'practitioner', limit: 50 }),
         paymentsAPI.getEarnings({ period: 'month' }),
+        adoptionsAPI.getMatchedPatients({ limit: 1 }),
       ]);
 
       let allBookings: Booking[] = [];
@@ -89,11 +93,18 @@ export default function PractitionerDashboard() {
         monthRevenue = earningsRes.value.data.data?.earnings?.thisMonth || 0;
       }
 
+      let matchedPatients = 0;
+      if (matchedRes.status === 'fulfilled') {
+        const md = matchedRes.value.data.data || matchedRes.value.data;
+        matchedPatients = md?.total || 0;
+      }
+
       setStats({
         todayAppointments: todayBookings.length,
         pendingRequests: pending.length,
         monthRevenue,
         rating: user?.practitionerProfile?.rating || 0,
+        matchedPatients,
       });
     } catch {
       // Use defaults
@@ -149,6 +160,14 @@ export default function PractitionerDashboard() {
       icon: DollarSign,
       color: 'text-sky-600',
       bgColor: 'bg-sky-50',
+    },
+    {
+      label: 'Matched Patients',
+      value: stats.matchedPatients.toString(),
+      icon: HeartHandshake,
+      color: 'text-rose-600',
+      bgColor: 'bg-rose-50',
+      href: '/practitioner/matched-patients',
     },
     {
       label: 'Rating',
