@@ -19,6 +19,7 @@
     "prisma:migrate:prod": "prisma migrate deploy",
     "prisma:generate": "prisma generate",
     "prisma:seed": "ts-node prisma/seed.ts",
+    "prisma:seed:users": "ts-node prisma/seed-users.ts",
     "prisma:studio": "prisma studio",
     "prisma:reset": "prisma migrate reset"
   },
